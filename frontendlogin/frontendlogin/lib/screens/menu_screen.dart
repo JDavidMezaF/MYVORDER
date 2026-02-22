@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'carrito_screen.dart';
 
 class MenuScreen extends StatefulWidget {
   final String restaurante;
@@ -15,8 +16,8 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> {
+  final List<Map<String, dynamic>> _miCarrito = [];
 
-  // 🪄 Aquí está la magia: Dependiendo del restaurante, devolvemos un menú diferente
   List<Map<String, dynamic>> _obtenerPlatillos() {
     if (widget.restaurante == 'La Casa del Taco') {
       return [
@@ -36,17 +37,54 @@ class _MenuScreenState extends State<MenuScreen> {
         {'nombre': 'Teriyaki de Pollo', 'descripcion': 'Pollo glaseado servido con arroz al vapor.', 'precio': 135.0, 'imagen': 'https://images.unsplash.com/photo-1598514982205-f36b96d1e8d4?q=80&w=300'},
       ];
     }
-
-    // Por si agregas otro restaurante y olvidas ponerle menú
     return [
       {'nombre': 'Platillo Genérico', 'descripcion': 'Descripción pendiente.', 'precio': 100.0, 'imagen': 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=300'},
     ];
   }
 
+  void _agregarAlCarrito(Map<String, dynamic> platillo) {
+    setState(() {
+      int index = _miCarrito.indexWhere((item) => item['nombre'] == platillo['nombre']);
+      if (index != -1) {
+        _miCarrito[index]['cantidad']++;
+      } else {
+        _miCarrito.add({
+          'nombre': platillo['nombre'],
+          'precio': platillo['precio'],
+          'cantidad': 1,
+        });
+      }
+    });
+  }
+
+  // ➖ NUEVA FUNCIÓN: Remover del carrito
+  void _removerDelCarrito(Map<String, dynamic> platillo) {
+    setState(() {
+      int index = _miCarrito.indexWhere((item) => item['nombre'] == platillo['nombre']);
+      if (index != -1) {
+        if (_miCarrito[index]['cantidad'] > 1) {
+          _miCarrito[index]['cantidad']--;
+        } else {
+          _miCarrito.removeAt(index); // Si llega a 0, lo borra de la lista
+        }
+      }
+    });
+  }
+
+  // Ayudante para saber cuántos hay de un platillo específico
+  int _obtenerCantidad(String nombre) {
+    int index = _miCarrito.indexWhere((item) => item['nombre'] == nombre);
+    return index != -1 ? _miCarrito[index]['cantidad'] : 0;
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Mandamos a llamar los platillos correctos justo antes de dibujar la pantalla
     final platillos = _obtenerPlatillos();
+
+    int totalArticulos = 0;
+    for (var item in _miCarrito) {
+      totalArticulos += item['cantidad'] as int;
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -65,6 +103,8 @@ class _MenuScreenState extends State<MenuScreen> {
         itemCount: platillos.length,
         itemBuilder: (context, index) {
           final platillo = platillos[index];
+          final int cantidadActual = _obtenerCantidad(platillo['nombre']);
+
           return Card(
             elevation: 3,
             margin: const EdgeInsets.symmetric(vertical: 8),
@@ -95,29 +135,34 @@ class _MenuScreenState extends State<MenuScreen> {
                       ),
                       const SizedBox(height: 5),
                       Text(
-                        platillo['descripcion'],
-                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
                         '\$${platillo['precio'].toStringAsFixed(2)}',
                         style: const TextStyle(fontSize: 16, color: Colors.deepOrange, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.add_circle, color: Colors.deepOrange, size: 30),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('${platillo['nombre']} agregado al carrito'),
-                        duration: const Duration(seconds: 1),
-                      ),
-                    );
-                  },
+
+                // ✨ MAGIA VISUAL: Si es 0 muestra "+", si es > 0 muestra "- [1] +"
+                cantidadActual == 0
+                    ? IconButton(
+                  icon: const Icon(Icons.add_circle, color: Colors.deepOrange, size: 35),
+                  onPressed: () => _agregarAlCarrito(platillo),
+                )
+                    : Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.remove_circle_outline, color: Colors.deepOrange),
+                      onPressed: () => _removerDelCarrito(platillo),
+                    ),
+                    Text(
+                      '$cantidadActual',
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add_circle, color: Colors.deepOrange),
+                      onPressed: () => _agregarAlCarrito(platillo),
+                    ),
+                  ],
                 ),
                 const SizedBox(width: 5),
               ],
@@ -126,14 +171,27 @@ class _MenuScreenState extends State<MenuScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // Aquí conectaremos el Carrito
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Ir al carrito (Pendiente)')),
+        onPressed: () async {
+          // El 'await' hace que el menú se pause hasta que cierres el carrito
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CarritoScreen(
+                restaurante: widget.restaurante,
+                mesa: widget.mesa,
+                platillosCarrito: _miCarrito,
+              ),
+            ),
           );
+          // Cuando regresas del carrito, actualizamos el menú para reflejar los cambios
+          setState(() {});
         },
         backgroundColor: Colors.deepOrange,
-        icon: const Icon(Icons.shopping_cart, color: Colors.white),
+        icon: Badge(
+          label: Text('$totalArticulos'),
+          isLabelVisible: totalArticulos > 0,
+          child: const Icon(Icons.shopping_cart, color: Colors.white),
+        ),
         label: const Text('Ver Pedido', style: TextStyle(color: Colors.white)),
       ),
     );
