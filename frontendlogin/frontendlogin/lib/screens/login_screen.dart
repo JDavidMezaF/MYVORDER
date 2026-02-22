@@ -3,47 +3,80 @@ import '../services/auth_service.dart';
 import 'restaurantes_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final AuthService authService = AuthService();
+  // 1. VARIABLES DE TU DISEÑO ORIGINAL
+  bool _esLogin = true;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _nombreController = TextEditingController();
 
+  // 2. VARIABLES DEL BACKEND DE TU COMPAÑERO
+  final AuthService authService = AuthService();
   bool isLoading = false;
 
-Future<void> login() async {
-  setState(() => isLoading = true);
-
-  final result = await authService.login(
-    emailController.text,
-    passwordController.text,
-  );
-
-  if (!mounted) return;
-
-  setState(() => isLoading = false);
-
-  if (result["statusCode"] == 200) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const RestaurantesScreen()),
-    );
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          result["data"]?["message"] ?? "Error al iniciar sesión",
-        ),
-      ),
-    );
+  // Función para cambiar entre Login y Registro
+  void _toggleForm() {
+    setState(() {
+      _esLogin = !_esLogin;
+    });
   }
-}
 
+  // Lógica fusionada (Diseño + Backend)
+  Future<void> _procesarFormulario() async {
+    if (_esLogin) {
+      // --- LÓGICA DEL COMPAÑERO (LOGIN REAL) ---
+      setState(() => isLoading = true);
+
+      final result = await authService.login(
+        _emailController.text,
+        _passwordController.text,
+      );
+
+      if (!mounted) return;
+
+      setState(() => isLoading = false);
+
+      if (result["statusCode"] == 200) {
+        // Navegamos a Restaurantes (usando la ruta de tu compañero)
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const RestaurantesScreen()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result["data"]?["message"] ?? "Error al iniciar sesión",
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } else {
+      // --- LÓGICA DE REGISTRO (Pendiente de Backend) ---
+      String nombre = _nombreController.text;
+      if (nombre.isEmpty || _emailController.text.isEmpty || _passwordController.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Por favor llena todos los campos')),
+        );
+        return;
+      }
+
+      // Aviso temporal para tu compañero
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Falta conectar el Registro a la Base de Datos (Avisa a tu equipo)'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,108 +84,88 @@ Future<void> login() async {
       backgroundColor: Colors.white,
       body: Center(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 25),
-            child: Card(
-              elevation: 8,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Tu diseño de ícono (Mantenemos tu estilo)
+              const Icon(Icons.restaurant, size: 80, color: Colors.deepOrange),
+              const SizedBox(height: 20),
+
+              Text(
+                _esLogin ? 'Bienvenido de nuevo' : 'Crear Cuenta',
+                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.deepOrange),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(25),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
+              const SizedBox(height: 30),
 
-                    /// 🖼 IMAGEN
-                    Image.asset(
-                      "assets/logo.png",
-                      height: 120,
-                    ),
+              // Campo Nombre (Solo para Registro)
+              if (!_esLogin)
+                TextField(
+                  controller: _nombreController,
+                  decoration: const InputDecoration(
+                    labelText: 'Nombre Completo',
+                    prefixIcon: Icon(Icons.person, color: Colors.deepOrange),
+                    border: OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.deepOrange)),
+                  ),
+                ),
+              if (!_esLogin) const SizedBox(height: 15),
 
-                    const SizedBox(height: 20),
-
-                    /// TÍTULO
-                    const Text(
-                      "Bienvenido",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.orange,
-                      ),
-                    ),
-
-                    const SizedBox(height: 25),
-
-                    /// EMAIL
-                    TextField(
-                      controller: emailController,
-                      decoration: InputDecoration(
-                        labelText: "Correo",
-                        prefixIcon: const Icon(
-                          Icons.email,
-                          color: Colors.orange,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: Colors.orange),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    /// PASSWORD
-                    TextField(
-                      controller: passwordController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: "Contraseña",
-                        prefixIcon: const Icon(
-                          Icons.lock,
-                          color: Colors.orange,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: Colors.orange),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    /// BOTÓN
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: isLoading ? null : login,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: isLoading
-                            ? const CircularProgressIndicator(
-                                color: Colors.white,
-                              )
-                            : const Text(
-                                "Iniciar Sesión",
-                                style: TextStyle(fontSize: 16),
-                              ),
-                      ),
-                    ),
-                  ],
+              // Campo Correo
+              TextField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(
+                  labelText: 'Correo Electrónico',
+                  prefixIcon: Icon(Icons.email, color: Colors.deepOrange),
+                  border: OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.deepOrange)),
                 ),
               ),
-            ),
+              const SizedBox(height: 15),
+
+              // Campo Contraseña
+              TextField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Contraseña',
+                  prefixIcon: Icon(Icons.lock, color: Colors.deepOrange),
+                  border: OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.deepOrange)),
+                ),
+              ),
+              const SizedBox(height: 30),
+
+              // Botón Principal
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  // Deshabilitamos el botón si la app está pensando (cargando)
+                  onPressed: isLoading ? null : _procesarFormulario,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepOrange,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                  ),
+                  child: isLoading
+                      ? const CircularProgressIndicator(color: Colors.white) // Animación del compañero
+                      : Text(_esLogin ? 'Iniciar Sesión' : 'Registrarse', style: const TextStyle(fontSize: 18)),
+                ),
+              ),
+              const SizedBox(height: 15),
+
+              // Cambiar entre Login y Registro
+              TextButton(
+                onPressed: _toggleForm,
+                child: Text(
+                  _esLogin
+                      ? '¿No tienes cuenta? Regístrate aquí'
+                      : '¿Ya tienes cuenta? Inicia sesión',
+                  style: TextStyle(color: Colors.deepOrange.shade700),
+                ),
+              ),
+            ],
           ),
         ),
       ),
