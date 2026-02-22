@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-// import 'menus_screen.dart'; // Lo activaremos en el siguiente paso
+import 'menu_screen.dart';
 
 class EscanerScreen extends StatefulWidget {
   final String nombreUsuario;
@@ -28,25 +28,16 @@ class _EscanerScreenState extends State<EscanerScreen> {
       _codigoDetectado = true;
     });
 
-    // Aviso temporal hasta que conectemos el menú real
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('¡Mesa $codigoMesa detectada! (Falta conectar el Menú)'),
-          backgroundColor: Colors.green,
-        )
-    );
-
-    /* PRÓXIMO PASO: Descomentar esto cuando tengamos el menú
+    // Navegación real al Menú
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => MenusScreen(
+        builder: (context) => MenuScreen(
           restaurante: widget.nombreRestaurante,
           mesa: codigoMesa,
         ),
       ),
     );
-    */
   }
 
   void _mostrarIngresoManual() {
