@@ -59,22 +59,51 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } else {
+      
       // --- LÓGICA DE REGISTRO (Pendiente de Backend) ---
-      String nombre = _nombreController.text;
-      if (nombre.isEmpty || _emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      if (_nombreController.text.isEmpty ||
+          _emailController.text.isEmpty ||
+          _passwordController.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Por favor llena todos los campos')),
         );
         return;
       }
 
-      // Aviso temporal para tu compañero
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Falta conectar el Registro a la Base de Datos (Avisa a tu equipo)'),
-          backgroundColor: Colors.orange,
-        ),
+      setState(() => isLoading = true);
+
+      final result = await authService.register(
+        _nombreController.text,
+        _emailController.text,
+        _passwordController.text,
       );
+
+      if (!mounted) return;
+
+      setState(() => isLoading = false);
+
+      if (result["statusCode"] == 200 || result["statusCode"] == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Cuenta creada correctamente"),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const RestaurantesScreen()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+            result["data"]?["message"] ?? "Error al registrarse",
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -171,4 +200,4 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-}
+} 
