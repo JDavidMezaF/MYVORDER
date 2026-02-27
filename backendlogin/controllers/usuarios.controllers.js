@@ -12,27 +12,29 @@ exports.obtenerUsuarios = async (req, res) => {
   }
 };
 
+
 // CREAR USUARIO
 exports.crearUsuario = async (req, res) => {
   try {
-    const { Nombre, EMail, Password } = req.body;
+    const { Nombre, EMail, Password, Rol } = req.body;
 
-    // Si no envían rol, asignamos uno por defecto
-    const Rol = 'cliente';
+    if (!Nombre || !EMail || !Password) {
+      return res.status(400).json({ error: "Faltan datos obligatorios" });
+    }
 
     const hashedPassword = await bcrypt.hash(Password, 10);
 
-    const sql = `
-      INSERT INTO usuario (Nombre, EMail, Password, Rol)
-      VALUES (?, ?, ?, ?)
-    `;
+    await db.query(
+      "INSERT INTO usuario (Nombre, EMail, Password, Rol) VALUES (?, ?, ?, ?)",
+      [Nombre, EMail, hashedPassword, Rol || "cliente"]
+    );
 
-    await db.query(sql, [Nombre, EMail, hashedPassword, Rol]);
-
-    res.json({ message: 'Usuario creado correctamente' });
+    res.status(201).json({
+      message: "Usuario creado correctamente"
+    });
 
   } catch (error) {
-    console.error(error); // ← importante para ver el error real
+    console.error(error);
     res.status(500).json({ error: error.message });
   }
 };

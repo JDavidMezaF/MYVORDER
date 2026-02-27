@@ -25,7 +25,8 @@ Future<Map<String, dynamic>> register(
   String nombre,
   String email,
   String password,
-) async {
+  String rol,
+  ) async {
 
   final response = await http.post(
     Uri.parse("${ApiConfig.baseUrl}/api/usuarios"),
@@ -34,6 +35,7 @@ Future<Map<String, dynamic>> register(
       "Nombre": nombre,
       "EMail": email,
       "Password": password,
+      "Rol": rol,
     }),
   );
 

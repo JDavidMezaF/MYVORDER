@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import 'restaurantes_screen.dart';
+import 'admin_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,6 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   // 2. VARIABLES DEL BACKEND DE TU COMPAÑERO
   final AuthService authService = AuthService();
   bool isLoading = false;
+  String _rolSeleccionado = "cliente";
 
   // Función para cambiar entre Login y Registro
   void _toggleForm() {
@@ -43,12 +45,31 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => isLoading = false);
 
       if (result["statusCode"] == 200) {
-        // Navegamos a Restaurantes (usando la ruta de tu compañero)
+      print("DATA COMPLETA: ${result["data"]}");
+    
+      final usuario = result["data"]["usuario"];
+
+      final rol = usuario["Rol"]
+          .toString()
+          .toLowerCase()
+          .trim();
+
+     print("ROL NORMALIZADO: $rol");
+
+     if (rol == "admin") {
         Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const AdminScreen()),
+        );
+      } else {
+       Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const RestaurantesScreen()),
         );
-      } else {
+      }
+    }
+
+       else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -76,6 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
         _nombreController.text,
         _emailController.text,
         _passwordController.text,
+        _rolSeleccionado,
       );
 
       if (!mounted) return;
@@ -83,27 +105,51 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => isLoading = false);
 
       if (result["statusCode"] == 200 || result["statusCode"] == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Cuenta creada correctamente"),
-            backgroundColor: Colors.green,
-          ),
-        );
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const RestaurantesScreen()),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-            result["data"]?["message"] ?? "Error al registrarse",
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text("Cuenta creada correctamente"),
+      backgroundColor: Colors.green,
+    ),
+  );
+
+  // 👇 LOGIN AUTOMÁTICO DESPUÉS DE REGISTRAR
+  final loginResult = await authService.login(
+    _emailController.text,
+    _passwordController.text,
+  );
+
+  if (loginResult["statusCode"] == 200) {
+
+    final usuario = loginResult["data"]["usuario"];
+
+    final rol = usuario["Rol"]
+        .toString()
+        .toLowerCase()
+        .trim();
+
+    if (rol == "admin") {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const AdminScreen()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const RestaurantesScreen()),
+      );
+    }
+
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Error al iniciar sesión automáticamente"),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+}
     }
   }
 
@@ -164,6 +210,36 @@ class _LoginScreenState extends State<LoginScreen> {
                   focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.deepOrange)),
                 ),
               ),
+              // Selector de Rol (SOLO EN REGISTRO)
+              if (!_esLogin) ...[
+                const SizedBox(height: 15),
+                DropdownButtonFormField<String>(
+                  value: _rolSeleccionado,
+                  decoration: const InputDecoration(
+                    labelText: 'Selecciona Rol',
+                    prefixIcon: Icon(Icons.admin_panel_settings, color: Colors.deepOrange),
+                    border: OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.deepOrange),
+                    ),
+                  ),
+                  items: const [
+                    DropdownMenuItem(
+                      value: "cliente",
+                      child: Text("Cliente"),
+                    ),
+                    DropdownMenuItem(
+                      value: "admin",
+                      child: Text("Administrador"),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      _rolSeleccionado = value!;
+                    });
+                  },
+                ),
+              ],
               const SizedBox(height: 30),
 
               // Botón Principal
