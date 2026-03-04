@@ -11,28 +11,25 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // 1. VARIABLES DE TU DISEÑO ORIGINAL
   bool _esLogin = true;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _nombreController = TextEditingController();
 
-  // 2. VARIABLES DEL BACKEND DE TU COMPAÑERO
   final AuthService authService = AuthService();
   bool isLoading = false;
   String _rolSeleccionado = "cliente";
 
-  // Función para cambiar entre Login y Registro
+  bool _hoveringButton = false;
+
   void _toggleForm() {
     setState(() {
       _esLogin = !_esLogin;
     });
   }
 
-  // Lógica fusionada (Diseño + Backend)
   Future<void> _procesarFormulario() async {
     if (_esLogin) {
-      // --- LÓGICA DEL COMPAÑERO (LOGIN REAL) ---
       setState(() => isLoading = true);
 
       final result = await authService.login(
@@ -45,31 +42,21 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => isLoading = false);
 
       if (result["statusCode"] == 200) {
-      print("DATA COMPLETA: ${result["data"]}");
-    
-      final usuario = result["data"]["usuario"];
+        final usuario = result["data"]["usuario"];
+        final rol = usuario["rol"].toString().toLowerCase().trim();
 
-      final rol = usuario["rol"]
-          .toString()
-          .toLowerCase()
-          .trim();
-
-     print("ROL NORMALIZADO: $rol");
-
-     if (rol == "admin") {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const AdminScreen()),
-        );
+        if (rol == "admin") {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const AdminScreen()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const RestaurantesScreen()),
+          );
+        }
       } else {
-       Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const RestaurantesScreen()),
-        );
-      }
-    }
-
-       else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -80,8 +67,6 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } else {
-      
-      // --- LÓGICA DE REGISTRO (Pendiente de Backend) ---
       if (_nombreController.text.isEmpty ||
           _emailController.text.isEmpty ||
           _passwordController.text.isEmpty) {
@@ -105,175 +90,261 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => isLoading = false);
 
       if (result["statusCode"] == 200 || result["statusCode"] == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Cuenta creada correctamente"),
+            backgroundColor: Colors.green,
+          ),
+        );
 
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      content: Text("Cuenta creada correctamente"),
-      backgroundColor: Colors.green,
-    ),
-  );
+        final loginResult = await authService.login(
+          _emailController.text,
+          _passwordController.text,
+        );
 
-  // 👇 LOGIN AUTOMÁTICO DESPUÉS DE REGISTRAR
-  final loginResult = await authService.login(
-    _emailController.text,
-    _passwordController.text,
-  );
+        if (loginResult["statusCode"] == 200) {
+          final usuario = loginResult["data"]["usuario"];
+          final rol =
+              usuario["Rol"].toString().toLowerCase().trim();
 
-  if (loginResult["statusCode"] == 200) {
-
-    final usuario = loginResult["data"]["usuario"];
-
-    final rol = usuario["Rol"]
-        .toString()
-        .toLowerCase()
-        .trim();
-
-    if (rol == "admin") {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const AdminScreen()),
-      );
-    } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const RestaurantesScreen()),
-      );
+          if (rol == "admin") {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const AdminScreen()),
+            );
+          } else {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const RestaurantesScreen()),
+            );
+          }
+        }
+      }
     }
-
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Error al iniciar sesión automáticamente"),
-        backgroundColor: Colors.red,
-      ),
-    );
   }
 
-}
-    }
+  InputDecoration _inputDecoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      floatingLabelStyle: const TextStyle(
+        color: Colors.deepOrange,
+        shadows: [
+          Shadow(color: Colors.white, blurRadius: 2),
+        ],
+      ),
+      labelStyle: const TextStyle(
+        color: Colors.black87,
+        shadows: [
+          Shadow(color: Colors.white, blurRadius: 2),
+        ],
+      ),
+      prefixIcon: Icon(icon, color: Colors.deepOrange),
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide:
+            const BorderSide(color: Colors.deepOrange, width: 2),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Tu diseño de ícono (Mantenemos tu estilo)
-              const Icon(Icons.restaurant, size: 80, color: Colors.deepOrange),
-              const SizedBox(height: 20),
-
-              Text(
-                _esLogin ? 'Bienvenido de nuevo' : 'Crear Cuenta',
-                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.deepOrange),
-              ),
-              const SizedBox(height: 30),
-
-              // Campo Nombre (Solo para Registro)
-              if (!_esLogin)
-                TextField(
-                  controller: _nombreController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nombre Completo',
-                    prefixIcon: Icon(Icons.person, color: Colors.deepOrange),
-                    border: OutlineInputBorder(),
-                    focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.deepOrange)),
-                  ),
-                ),
-              if (!_esLogin) const SizedBox(height: 15),
-
-              // Campo Correo
-              TextField(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Correo Electrónico',
-                  prefixIcon: Icon(Icons.email, color: Colors.deepOrange),
-                  border: OutlineInputBorder(),
-                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.deepOrange)),
-                ),
-              ),
-              const SizedBox(height: 15),
-
-              // Campo Contraseña
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Contraseña',
-                  prefixIcon: Icon(Icons.lock, color: Colors.deepOrange),
-                  border: OutlineInputBorder(),
-                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.deepOrange)),
-                ),
-              ),
-              // Selector de Rol (SOLO EN REGISTRO)
-              if (!_esLogin) ...[
-                const SizedBox(height: 15),
-                DropdownButtonFormField<String>(
-                  value: _rolSeleccionado,
-                  decoration: const InputDecoration(
-                    labelText: 'Selecciona Rol',
-                    prefixIcon: Icon(Icons.admin_panel_settings, color: Colors.deepOrange),
-                    border: OutlineInputBorder(),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.deepOrange),
-                    ),
-                  ),
-                  items: const [
-                    DropdownMenuItem(
-                      value: "cliente",
-                      child: Text("Cliente"),
-                    ),
-                    DropdownMenuItem(
-                      value: "restaurante",
-                      child: Text("Restaurante"),
-                    ),
-                  ],
-                  onChanged: (value) {
-                    setState(() {
-                      _rolSeleccionado = value!;
-                    });
-                  },
-                ),
-              ],
-              const SizedBox(height: 30),
-
-              // Botón Principal
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  // Deshabilitamos el botón si la app está pensando (cargando)
-                  onPressed: isLoading ? null : _procesarFormulario,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepOrange,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                  ),
-                  child: isLoading
-                      ? const CircularProgressIndicator(color: Colors.white) // Animación del compañero
-                      : Text(_esLogin ? 'Iniciar Sesión' : 'Registrarse', style: const TextStyle(fontSize: 18)),
-                ),
-              ),
-              const SizedBox(height: 15),
-
-              // Cambiar entre Login y Registro
-              TextButton(
-                onPressed: _toggleForm,
-                child: Text(
-                  _esLogin
-                      ? '¿No tienes cuenta? Regístrate aquí'
-                      : '¿Ya tienes cuenta? Inicia sesión',
-                  style: TextStyle(color: Colors.deepOrange.shade700),
-                ),
-              ),
-            ],
+      body: Stack(
+        children: [
+          SizedBox.expand(
+            child: Image.asset(
+              'assets/images/fondologin.png',
+              fit: BoxFit.cover,
+            ),
           ),
-        ),
+          Container(
+            color: Colors.black.withOpacity(0.25),
+          ),
+          SingleChildScrollView(
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 28),
+              child: Column(
+                children: [
+                  const SizedBox(height: 220),
+
+                  const Text(
+                    "Bienvenido",
+                    style: TextStyle(
+                      fontSize: 42,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: 1.5,
+                      shadows: [
+                        Shadow(
+                          blurRadius: 15,
+                          color: Colors.black54,
+                          offset: Offset(0, 4),
+                        )
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  const Text(
+                    "My Virtual Order",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w300,
+                      color: Colors.white70,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  Container(
+                    padding: const EdgeInsets.all(25),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Column(
+                      children: [
+
+                        if (!_esLogin)
+                          TextField(
+                            controller: _nombreController,
+                            decoration: _inputDecoration(
+                                'Nombre Completo', Icons.person),
+                          ),
+
+                        if (!_esLogin)
+                          const SizedBox(height: 15),
+
+                        TextField(
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: _inputDecoration(
+                              'Correo Electrónico', Icons.email),
+                        ),
+
+                        const SizedBox(height: 15),
+
+                        TextField(
+                          controller: _passwordController,
+                          obscureText: true,
+                          decoration: _inputDecoration(
+                              'Contraseña', Icons.lock),
+                        ),
+
+                        if (!_esLogin) ...[
+                          const SizedBox(height: 15),
+                          DropdownButtonFormField<String>(
+                            value: _rolSeleccionado,
+                            decoration: _inputDecoration(
+                                'Selecciona Rol',
+                                Icons.admin_panel_settings),
+                            items: const [
+                              DropdownMenuItem(
+                                value: "cliente",
+                                child: Text("Cliente"),
+                              ),
+                              DropdownMenuItem(
+                                value: "restaurante",
+                                child: Text("Restaurante"),
+                              ),
+                            ],
+                            onChanged: (value) {
+                              setState(() {
+                                _rolSeleccionado = value!;
+                              });
+                            },
+                          ),
+                        ],
+
+                        const SizedBox(height: 30),
+
+                        MouseRegion(
+                          onEnter: (_) =>
+                              setState(() => _hoveringButton = true),
+                          onExit: (_) =>
+                              setState(() => _hoveringButton = false),
+                          child: AnimatedContainer(
+                            duration:
+                                const Duration(milliseconds: 200),
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed:
+                                  isLoading ? null : _procesarFormulario,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: _hoveringButton
+                                    ? Colors.orangeAccent
+                                    : Colors.deepOrange,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 15),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(14),
+                                ),
+                              ),
+                              child: isLoading
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.white)
+                                  : Text(
+                                      _esLogin
+                                          ? 'Iniciar Sesión'
+                                          : 'Registrarse',
+                                      style: const TextStyle(
+                                          fontSize: 18),
+                                    ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 15),
+
+                        GestureDetector(
+                          onTap: _toggleForm,
+                          child: RichText(
+                            text: TextSpan(
+                              style: const TextStyle(
+                                fontSize: 14,
+                              ),
+                              children: [
+                                const TextSpan(
+                                  text: "¿No tienes cuenta? ",
+                                  style:
+                                      TextStyle(color: Colors.white),
+                                ),
+                                const TextSpan(
+                                  text: "Regístrate",
+                                  style: TextStyle(
+                                    color: Colors.deepOrange,
+                                    decoration:
+                                        TextDecoration.underline,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 40),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
-} 
+}

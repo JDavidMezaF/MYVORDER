@@ -10,7 +10,6 @@ class RestaurantesScreen extends StatefulWidget {
 }
 
 class _RestaurantesScreenState extends State<RestaurantesScreen> {
-
   final RestauranteService service = RestauranteService();
   late Future<List<dynamic>> restaurantes;
 
@@ -23,97 +22,179 @@ class _RestaurantesScreenState extends State<RestaurantesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Elige un Restaurante'),
-        backgroundColor: Colors.deepOrange,
-        foregroundColor: Colors.white,
-        automaticallyImplyLeading: false,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          children: [
-            const SizedBox(height: 10),
-            const Text(
-              '¿Dónde comerás hoy?',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.deepOrange,
-              ),
+      body: Stack(
+        children: [
+
+          // 🔹 FONDO
+          SizedBox.expand(
+            child: Image.asset(
+              'assets/images/fondorest.png',
+              fit: BoxFit.cover,
             ),
-            const SizedBox(height: 20),
+          ),
 
-            Expanded(
-              child: FutureBuilder<List<dynamic>>(
-                future: restaurantes,
-                builder: (context, snapshot) {
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 26),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
 
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
+                  const SizedBox(height: 240),
 
-                  if (snapshot.hasError) {
-                    return const Center(child: Text("Error al cargar restaurantes"));
-                  }
+                  // 🔥 TÍTULO ELEGANTE
+                  const Text(
+                    '¿Dónde comerás hoy?',
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black,
+                      letterSpacing: 0.4,
+                    ),
+                  ),
 
-                  final data = snapshot.data ?? [];
+                  const SizedBox(height: 8),
 
-                  return ListView.builder(
-                    itemCount: data.length,
-                    itemBuilder: (context, index) {
-                      final rest = data[index];
+                  const Text(
+                    'Elige entre las siguientes opciones',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w300,
+                      color: Colors.black54,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
 
-                      return Card(
-                        elevation: 4,
-                        margin: const EdgeInsets.symmetric(vertical: 10),
-                        child: InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => EscanerScreen(
-                                  nombreUsuario: "Invitado",
-                                  nombreRestaurante: rest['nombre'],
+                  const SizedBox(height: 35),
+
+                  // 🔹 LISTA
+                  Expanded(
+                    child: FutureBuilder<List<dynamic>>(
+                      future: restaurantes,
+                      builder: (context, snapshot) {
+
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.deepOrange,
+                            ),
+                          );
+                        }
+
+                        if (snapshot.hasError) {
+                          return const Center(
+                            child: Text("Error al cargar restaurantes"),
+                          );
+                        }
+
+                        final data = snapshot.data ?? [];
+
+                        return ListView.builder(
+                          padding: const EdgeInsets.only(bottom: 30),
+                          itemCount: data.length,
+                          itemBuilder: (context, index) {
+                            final rest = data[index];
+
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 22),
+                              padding: const EdgeInsets.all(22),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.97),
+                                borderRadius: BorderRadius.circular(24),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.06),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
+                              ),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(24),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => EscanerScreen(
+                                        nombreUsuario: "Invitado",
+                                        nombreRestaurante: rest['nombre'],
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+
+                                    // 🔹 NOMBRE
+                                    Text(
+                                      rest['nombre'],
+                                      style: const TextStyle(
+                                        fontSize: 21,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+
+                                    const SizedBox(height: 12),
+
+                                    // 🔹 FILA ESTRELLAS Y PRECIO
+                                    Row(
+                                      children: const [
+
+                                        Icon(Icons.star, size: 16, color: Colors.amber),
+                                        Icon(Icons.star, size: 16, color: Colors.amber),
+                                        Icon(Icons.star, size: 16, color: Colors.amber),
+                                        Icon(Icons.star_half, size: 16, color: Colors.amber),
+                                        Icon(Icons.star_border, size: 16, color: Colors.amber),
+
+                                        SizedBox(width: 10),
+
+                                        Text(
+                                          "4.3",
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: Colors.black54,
+                                          ),
+                                        ),
+
+                                        Spacer(),
+
+                                        Text(
+                                          "\$\$",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.deepOrange,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+
+                                    const SizedBox(height: 10),
+
+                                    const Text(
+                                      "Restaurante",
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.black54,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             );
                           },
-                          child: Row(
-                            children: [
-                              const SizedBox(
-                                width: 120,
-                                height: 100,
-                                child: Icon(Icons.restaurant, size: 50, color: Colors.grey),
-                              ),
-                              const SizedBox(width: 15),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    rest['nombre'],
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const Text("Restaurante registrado"),
-                                ],
-                              ),
-                              const Spacer(),
-                              const Icon(Icons.arrow_forward_ios, color: Colors.deepOrange),
-                              const SizedBox(width: 10),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                },
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
