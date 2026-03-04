@@ -10,7 +10,7 @@ exports.crearRestaurante = async (req, res) => {
     }
 
     const [result] = await db.query(
-      "INSERT INTO Restaurante (nombre, logo) VALUES (?, ?)",
+      "INSERT INTO restaurante (nombre, logo) VALUES (?, ?)",
       [nombre, logo || null]
     );
 
