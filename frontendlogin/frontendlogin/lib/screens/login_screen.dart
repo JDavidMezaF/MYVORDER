@@ -49,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
     
       final usuario = result["data"]["usuario"];
 
-      final rol = usuario["Rol"]
+      final rol = usuario["rol"]
           .toString()
           .toLowerCase()
           .trim();
@@ -229,8 +229,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Text("Cliente"),
                     ),
                     DropdownMenuItem(
-                      value: "admin",
-                      child: Text("Administrador"),
+                      value: "restaurante",
+                      child: Text("Restaurante"),
                     ),
                   ],
                   onChanged: (value) {

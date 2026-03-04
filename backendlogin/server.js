@@ -9,6 +9,7 @@ app.use(express.json());
 
 // Rutas
 app.use('/api/usuarios', require('./routes/usuarios.routes'));
+app.use('/api/restaurante', require('./routes/restaurantes.routes')); 
 //app.use('/api/mesas', require('./routes/mesas.routes'));
 //app.use('/api/pedidos', require('./routes/pedidos.routes'));
 
