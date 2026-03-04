@@ -27,7 +27,13 @@ exports.crearRestaurante = async (req, res) => {
 
 exports.obtenerRestaurantes = async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM restaurante");
+    const [rows] = await db.query(`
+      SELECT 
+        RestauranteID as id,
+        Nombre as nombre,
+        logo
+      FROM restaurante
+`   );
     res.json(rows);
   } catch (error) {
     console.error("ERROR REAL:", error);  // 👈 agrega esto
