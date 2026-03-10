@@ -25,7 +25,7 @@ class _RestaurantesScreenState extends State<RestaurantesScreen> {
       body: Stack(
         children: [
 
-          // 🔹 FONDO
+          // FONDO
           SizedBox.expand(
             child: Image.asset(
               'assets/images/fondorest.png',
@@ -42,7 +42,7 @@ class _RestaurantesScreenState extends State<RestaurantesScreen> {
 
                   const SizedBox(height: 240),
 
-                  // 🔥 TÍTULO ELEGANTE
+                  // TÍTULO
                   const Text(
                     '¿Dónde comerás hoy?',
                     style: TextStyle(
@@ -67,7 +67,7 @@ class _RestaurantesScreenState extends State<RestaurantesScreen> {
 
                   const SizedBox(height: 35),
 
-                  // 🔹 LISTA
+                  // LISTA
                   Expanded(
                     child: FutureBuilder<List<dynamic>>(
                       future: restaurantes,
@@ -89,96 +89,109 @@ class _RestaurantesScreenState extends State<RestaurantesScreen> {
 
                         final data = snapshot.data ?? [];
 
+                        if (data.isEmpty) {
+                          return const Center(
+                            child: Text(
+                              "No hay restaurantes disponibles aún.",
+                              style: TextStyle(color: Colors.black54),
+                            ),
+                          );
+                        }
+
                         return ListView.builder(
                           padding: const EdgeInsets.only(bottom: 30),
                           itemCount: data.length,
                           itemBuilder: (context, index) {
                             final rest = data[index];
+                            final String? logoUrl = rest['logo'];
+                            final bool tieneLogo =
+                                logoUrl != null && logoUrl.isNotEmpty;
 
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 22),
-                              padding: const EdgeInsets.all(22),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.97),
-                                borderRadius: BorderRadius.circular(24),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.06),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 10),
-                                  ),
-                                ],
-                              ),
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(24),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => EscanerScreen(
-                                        nombreUsuario: "Invitado",
-                                        nombreRestaurante: rest['nombre'],
-                                      ),
+                            return InkWell(
+                              borderRadius: BorderRadius.circular(25),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => EscanerScreen(
+                                      nombreUsuario: "Invitado",
+                                      nombreRestaurante: rest['nombre'],
                                     ),
-                                  );
-                                },
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 22),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(25),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.08),
+                                      blurRadius: 20,
+                                      offset: const Offset(0, 10),
+                                    ),
+                                  ],
+                                ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
 
-                                    // 🔹 NOMBRE
-                                    Text(
-                                      rest['nombre'],
-                                      style: const TextStyle(
-                                        fontSize: 21,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black87,
+                                    // IMAGEN / LOGO
+                                    ClipRRect(
+                                      borderRadius: const BorderRadius.vertical(
+                                        top: Radius.circular(25),
                                       ),
+                                      child: tieneLogo
+                                          ? Image.network(
+                                              logoUrl!,
+                                              height: 150,
+                                              width: double.infinity,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (_, __, ___) =>
+                                                  _imagenPlaceholder(),
+                                            )
+                                          : _imagenPlaceholder(),
                                     ),
 
-                                    const SizedBox(height: 12),
+                                    Padding(
+                                      padding: const EdgeInsets.all(18),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
 
-                                    // 🔹 FILA ESTRELLAS Y PRECIO
-                                    Row(
-                                      children: const [
-
-                                        Icon(Icons.star, size: 16, color: Colors.amber),
-                                        Icon(Icons.star, size: 16, color: Colors.amber),
-                                        Icon(Icons.star, size: 16, color: Colors.amber),
-                                        Icon(Icons.star_half, size: 16, color: Colors.amber),
-                                        Icon(Icons.star_border, size: 16, color: Colors.amber),
-
-                                        SizedBox(width: 10),
-
-                                        Text(
-                                          "4.3",
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            color: Colors.black54,
+                                          // NOMBRE
+                                          Text(
+                                            rest['nombre'] ?? 'Sin nombre',
+                                            style: const TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black87,
+                                            ),
                                           ),
-                                        ),
 
-                                        Spacer(),
+                                          const SizedBox(height: 8),
 
-                                        Text(
-                                          "\$\$",
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.deepOrange,
+                                          // TIPO
+                                          const Row(
+                                            children: [
+                                              Icon(
+                                                Icons.restaurant,
+                                                size: 14,
+                                                color: Colors.deepOrange,
+                                              ),
+                                              SizedBox(width: 5),
+                                              Text(
+                                                "Restaurante",
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  color: Colors.black54,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ),
-                                      ],
-                                    ),
-
-                                    const SizedBox(height: 10),
-
-                                    const Text(
-                                      "Restaurante",
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w400,
-                                        color: Colors.black54,
+                                        ],
                                       ),
                                     ),
                                   ],
@@ -195,6 +208,19 @@ class _RestaurantesScreenState extends State<RestaurantesScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _imagenPlaceholder() {
+    return Container(
+      height: 150,
+      width: double.infinity,
+      color: Colors.deepOrange.withOpacity(0.08),
+      child: const Icon(
+        Icons.restaurant,
+        size: 60,
+        color: Colors.deepOrange,
       ),
     );
   }

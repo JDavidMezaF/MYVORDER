@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 import 'crear_restaurante_screen.dart';
+import 'admin_restaurante_screen.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -36,6 +37,67 @@ class _AdminScreenState extends State<AdminScreen> {
       print("Error al cargar restaurantes: $e");
     } finally {
       setState(() => _cargando = false);
+    }
+  }
+
+  Future<void> _eliminarRestaurante(int id) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('${ApiConfig.baseUrl}/api/restaurantes/$id'),
+      );
+      if (response.statusCode == 200) {
+        _cargarRestaurantes();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Error al eliminar el restaurante")),
+        );
+      }
+    } catch (e) {
+      print("Error al eliminar: $e");
+    }
+  }
+
+  Future<void> _confirmarEliminar(int id, String nombre) async {
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.deepOrange),
+            SizedBox(width: 10),
+            Text("Confirmar eliminación"),
+          ],
+        ),
+        content: Text(
+          '¿Estás seguro de eliminar "$nombre"?',
+          style: const TextStyle(fontSize: 15),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(
+              "No",
+              style: TextStyle(color: Colors.black54, fontSize: 15),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.deepOrange,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text("Sí, eliminar", style: TextStyle(fontSize: 15)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmado == true) {
+      _eliminarRestaurante(id);
     }
   }
 
@@ -130,7 +192,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                 ),
                               );
                               if (result == true) {
-                                _cargarRestaurantes(); // Refresca la lista
+                                _cargarRestaurantes();
                               }
                             },
                           ),
@@ -150,13 +212,12 @@ class _AdminScreenState extends State<AdminScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          shadows: [Shadow(color: Colors.black38, blurRadius: 4)],
+                          color: Colors.black54,
                         ),
                       ),
                       IconButton(
                         onPressed: _cargarRestaurantes,
-                        icon: const Icon(Icons.refresh, color: Colors.white),
+                        icon: const Icon(Icons.refresh, color: Colors.black54),
                         tooltip: "Refrescar",
                       ),
                     ],
@@ -167,7 +228,11 @@ class _AdminScreenState extends State<AdminScreen> {
                   // LISTA DE RESTAURANTES
                   Expanded(
                     child: _cargando
-                        ? const Center(child: CircularProgressIndicator(color: Colors.deepOrange))
+                        ? const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.deepOrange,
+                            ),
+                          )
                         : _restaurantes.isEmpty
                             ? Center(
                                 child: Container(
@@ -179,7 +244,8 @@ class _AdminScreenState extends State<AdminScreen> {
                                   child: const Text(
                                     "No hay restaurantes aún.\n¡Crea el primero!",
                                     textAlign: TextAlign.center,
-                                    style: TextStyle(color: Colors.black54, fontSize: 15),
+                                    style: TextStyle(
+                                        color: Colors.black54, fontSize: 15),
                                   ),
                                 ),
                               )
@@ -187,44 +253,77 @@ class _AdminScreenState extends State<AdminScreen> {
                                 itemCount: _restaurantes.length,
                                 itemBuilder: (context, index) {
                                   final rest = _restaurantes[index];
+                                  final int id = rest['id'];
+                                  final String nombre =
+                                      rest['nombre'] ?? 'Sin nombre';
+
                                   return Card(
                                     margin: const EdgeInsets.only(bottom: 12),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(15),
                                     ),
                                     elevation: 4,
-                                    child: ListTile(
-                                      contentPadding: const EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 10),
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(15),
+                                      onTap: () async {
+                                        final result = await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => AdminRestauranteScreen(
+                                              restaurante: rest,
+                                            ),
+                                          ),
+                                        );
+                                        if (result == true) {
+                                          _cargarRestaurantes();
+                                        }
+                                      },
+                                      child: ListTile(
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 16, vertical: 10),
                                       leading: ClipRRect(
-                                        borderRadius: BorderRadius.circular(10),
-                                        child: rest['logo'] != null && rest['logo'].toString().isNotEmpty
+                                        borderRadius:
+                                            BorderRadius.circular(10),
+                                        child: rest['logo'] != null &&
+                                                rest['logo']
+                                                    .toString()
+                                                    .isNotEmpty
                                             ? Image.network(
                                                 rest['logo'],
                                                 width: 55,
                                                 height: 55,
                                                 fit: BoxFit.cover,
-                                                errorBuilder: (_, __, ___) => _iconoRestaurante(),
+                                                errorBuilder: (_, __, ___) =>
+                                                    _iconoRestaurante(),
                                               )
                                             : _iconoRestaurante(),
                                       ),
                                       title: Text(
-                                        rest['nombre'] ?? 'Sin nombre',
+                                        nombre,
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16,
                                         ),
                                       ),
                                       subtitle: Text(
-                                        'ID: ${rest['id']}',
-                                        style: const TextStyle(color: Colors.grey),
+                                        'ID: $id',
+                                        style: const TextStyle(
+                                            color: Colors.grey),
                                       ),
-                                      trailing: const Icon(
-                                        Icons.restaurant,
-                                        color: Colors.deepOrange,
+                                      trailing: IconButton(
+                                        icon: const Icon(
+                                          Icons.delete_outline,
+                                          color: Colors.redAccent,
+                                          size: 26,
+                                        ),
+                                        tooltip: "Eliminar restaurante",
+                                        onPressed: () =>
+                                            _confirmarEliminar(id, nombre),
                                       ),
                                     ),
-                                  );
+                                  ),
+                                );
                                 },
                               ),
                   ),
