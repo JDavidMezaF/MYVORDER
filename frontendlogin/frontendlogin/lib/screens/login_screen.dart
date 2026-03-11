@@ -123,32 +123,50 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  InputDecoration _inputDecoration(String label, IconData icon) {
+  InputDecoration _inputDecoration(String textoLabel, IconData icon) {
     return InputDecoration(
-      labelText: label,
-      floatingLabelStyle: const TextStyle(
-        color: Colors.deepOrange,
-        shadows: [
-          Shadow(color: Colors.white, blurRadius: 2),
-        ],
+      // ✨ EL TRUCO: Contenedor camuflado
+      label: Container(
+        // Un poco de relleno para que proteja las letras cuando esté sobre la comida
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        decoration: BoxDecoration(
+          color: Colors.white, // Se camufla adentro, protege afuera
+          borderRadius: BorderRadius.circular(8),
+          // 🚨 ¡Eliminamos el border: Border.all()! Así ya no parece botón adentro
+        ),
+        child: Text(
+          textoLabel,
+          style: const TextStyle(
+            color: Colors.deepOrange, // Lo dejamos naranja como sugeriste
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
+          ),
+        ),
       ),
-      labelStyle: const TextStyle(
-        color: Colors.black87,
-        shadows: [
-          Shadow(color: Colors.white, blurRadius: 2),
-        ],
+
+      prefixIcon: Padding(
+        padding: const EdgeInsets.only(left: 10, right: 10),
+        child: Icon(icon, color: Colors.deepOrange, size: 28),
       ),
-      prefixIcon: Icon(icon, color: Colors.deepOrange),
+
       filled: true,
       fillColor: Colors.white,
+
+      contentPadding: const EdgeInsets.symmetric(vertical: 22, horizontal: 15),
+
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide.none,
       ),
+
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide:
-            const BorderSide(color: Colors.deepOrange, width: 2),
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Colors.deepOrange, width: 2.5),
+      ),
+
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Colors.redAccent, width: 2),
       ),
     );
   }
@@ -316,17 +334,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                 fontSize: 14,
                               ),
                               children: [
-                                const TextSpan(
-                                  text: "¿No tienes cuenta? ",
-                                  style:
-                                      TextStyle(color: Colors.white),
+                                // ✨ Quitamos el 'const' y ponemos la condición
+                                TextSpan(
+                                  text: _esLogin ? "¿No tienes cuenta? " : "¿Ya tienes una cuenta? ",
+                                  style: const TextStyle(color: Colors.white),
                                 ),
-                                const TextSpan(
-                                  text: "Regístrate",
-                                  style: TextStyle(
+                                // ✨ Aquí también cambia el texto según la pantalla
+                                TextSpan(
+                                  text: _esLogin ? "Regístrate" : "Iniciar Sesión",
+                                  style: const TextStyle(
                                     color: Colors.deepOrange,
-                                    decoration:
-                                        TextDecoration.underline,
+                                    decoration: TextDecoration.underline,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
