@@ -69,7 +69,7 @@ class _CrearRestauranteScreenState
             color: Colors.white.withOpacity(0.18),
           ),
 
-          // BOTÓN ATRÁS LINDO
+          // BOTÓN ATRÁS
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(16),

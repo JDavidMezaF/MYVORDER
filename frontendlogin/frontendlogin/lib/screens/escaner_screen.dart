@@ -5,11 +5,13 @@ import 'menu_screen.dart';
 class EscanerScreen extends StatefulWidget {
   final String nombreUsuario;
   final String nombreRestaurante;
+  final int idRestaurante;
 
   const EscanerScreen({
     super.key,
     required this.nombreUsuario,
-    required this.nombreRestaurante
+    required this.nombreRestaurante,
+    required this.idRestaurante,
   });
 
   @override
@@ -28,13 +30,13 @@ class _EscanerScreenState extends State<EscanerScreen> {
       _codigoDetectado = true;
     });
 
-    // Navegación real al Menú
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (context) => MenuScreen(
           restaurante: widget.nombreRestaurante,
           mesa: codigoMesa,
+          idRestaurante: widget.idRestaurante,
         ),
       ),
     );
@@ -100,7 +102,8 @@ class _EscanerScreenState extends State<EscanerScreen> {
           ),
           Center(
             child: Container(
-              width: 250, height: 250,
+              width: 250,
+              height: 250,
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.deepOrange, width: 4),
                 borderRadius: BorderRadius.circular(20),
@@ -108,22 +111,27 @@ class _EscanerScreenState extends State<EscanerScreen> {
             ),
           ),
           Positioned(
-            bottom: 50, left: 20, right: 20,
+            bottom: 50,
+            left: 20,
+            right: 20,
             child: Column(
               children: [
                 const Text(
                   "¿Problemas con el código?",
                   style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      shadows: [Shadow(blurRadius: 10, color: Colors.black)]
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    shadows: [Shadow(blurRadius: 10, color: Colors.black)],
                   ),
                 ),
                 const SizedBox(height: 10),
                 ElevatedButton.icon(
                   onPressed: _mostrarIngresoManual,
                   icon: const Icon(Icons.keyboard, color: Colors.black),
-                  label: const Text("Ingresar código manualmente", style: TextStyle(color: Colors.black)),
+                  label: const Text(
+                    "Ingresar código manualmente",
+                    style: TextStyle(color: Colors.black),
+                  ),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
                 ),
               ],
@@ -131,7 +139,6 @@ class _EscanerScreenState extends State<EscanerScreen> {
           ),
         ],
       ),
-      // Botón flotante para simular que escaneaste algo en el emulador
       floatingActionButton: FloatingActionButton(
         onPressed: () => _irAlMenu("MESA-01"),
         backgroundColor: Colors.deepOrange,

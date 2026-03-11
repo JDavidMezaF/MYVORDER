@@ -116,6 +116,7 @@ class _RestaurantesScreenState extends State<RestaurantesScreen> {
                                     builder: (context) => EscanerScreen(
                                       nombreUsuario: "Invitado",
                                       nombreRestaurante: rest['nombre'],
+                                      idRestaurante: rest['id'],
                                     ),
                                   ),
                                 );
