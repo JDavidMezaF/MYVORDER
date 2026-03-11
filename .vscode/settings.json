@@ -1,0 +1,23 @@
+{
+    "workbench.colorCustomizations": {
+        "activityBar.activeBackground": "#357345",
+        "activityBar.background": "#357345",
+        "activityBar.foreground": "#e7e7e7",
+        "activityBar.inactiveForeground": "#e7e7e799",
+        "activityBarBadge.background": "#a192cd",
+        "activityBarBadge.foreground": "#15202b",
+        "commandCenter.border": "#e7e7e799",
+        "sash.hoverBorder": "#357345",
+        "statusBar.background": "#255030",
+        "statusBar.foreground": "#e7e7e7",
+        "statusBarItem.hoverBackground": "#357345",
+        "statusBarItem.remoteBackground": "#255030",
+        "statusBarItem.remoteForeground": "#e7e7e7",
+        "titleBar.activeBackground": "#255030",
+        "titleBar.activeForeground": "#e7e7e7",
+        "titleBar.inactiveBackground": "#25503099",
+        "titleBar.inactiveForeground": "#e7e7e799"
+    },
+    "peacock.color": "#255030",
+    "cmake.sourceDirectory": "C:/Users/user/MYVORDER/frontendlogin/frontendlogin/linux"
+}
