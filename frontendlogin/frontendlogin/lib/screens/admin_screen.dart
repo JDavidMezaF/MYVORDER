@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 import 'crear_restaurante_screen.dart';
 import 'admin_restaurante_screen.dart';
+import 'login_screen.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -196,6 +197,35 @@ class _AdminScreenState extends State<AdminScreen> {
                               }
                             },
                           ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // BOTÓN CERRAR SESIÓN
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.logout),
+                            label: const Text(
+                              "Cerrar Sesión",
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                               borderRadius: BorderRadius.circular(15),
+                              ),
+                              elevation: 5,
+                            ),
+                            onPressed: () {
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                                (route) => false, // Limpia todo el historial de navegación
+                              );
+                            },
+                         ),
                         ),
                       ],
                     ),

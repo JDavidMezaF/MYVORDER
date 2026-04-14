@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'escaner_screen.dart';
 import '../services/restaurante_service.dart';
+import 'login_screen.dart';
 
 class RestaurantesScreen extends StatefulWidget {
   const RestaurantesScreen({super.key});
@@ -43,14 +44,35 @@ class _RestaurantesScreenState extends State<RestaurantesScreen> {
                   const SizedBox(height: 240),
 
                   // TÍTULO
-                  const Text(
-                    '¿Dónde comerás hoy?',
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black,
-                      letterSpacing: 0.4,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text(
+                        '¿Dónde comerás hoy?',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black,
+                          letterSpacing: 0.4,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginScreen()),
+                            (route) => false,
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.logout,
+                          color: Colors.red,
+                         size: 28,
+                        ),
+                        tooltip: "Cerrar sesión",
+                      ),
+                    ],
                   ),
 
                   const SizedBox(height: 8),
