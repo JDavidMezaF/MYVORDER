@@ -83,7 +83,7 @@ exports.eliminarRestaurante = async (req, res) => {
       return res.status(404).json({ message: "Restaurante no encontrado" });
     }
 
-    res.json({ message: "Restaurante eliminado correctamente" });
+    res.json({ message: "Restaurante y todos sus datos asociados eliminados con éxito" });
 
   } catch (error) {
     console.error("ERROR al eliminar:", error);
