@@ -1,4 +1,46 @@
 const db = require('../config/db');
+const bcrypt = require('bcrypt');
+const crypto = require('crypto');
+
+// ─── Utilidades ───────────────────────────────────────────────
+
+// Genera el email base desde el nombre del restaurante
+// Ej: "Tacos Pepe" → "tacospepe@test.com"
+const generarEmailBase = (nombre) => {
+  return nombre
+    .toLowerCase()
+    .replace(/\s+/g, '')        // quita espacios
+    .replace(/[^a-z0-9]/g, '') // quita caracteres especiales
+    + '@test.com';
+};
+
+// Manejo de duplicados: tacospepe@test.com → tacospepe2@test.com → tacospepe3@test.com
+const generarEmailUnico = async (nombre) => {
+  const emailBase = generarEmailBase(nombre);
+  const usuario = emailBase.replace('@test.com', '');
+
+  let email = emailBase;
+  let contador = 2;
+
+  while (true) {
+    const [rows] = await db.query(
+      'SELECT RestauranteID FROM restaurante WHERE email = ?',
+      [email]
+    );
+    if (rows.length === 0) break; // email disponible ✅
+    email = `${usuario}${contador}@test.com`;
+    contador++;
+  }
+
+  return email;
+};
+
+// Genera contraseña aleatoria segura de 10 caracteres
+const generarPassword = () => {
+  return crypto.randomBytes(10).toString('base64').slice(0, 10);
+};
+
+// ─── Controladores ────────────────────────────────────────────
 
 // Crear restaurante
 exports.crearRestaurante = async (req, res) => {
@@ -9,14 +51,31 @@ exports.crearRestaurante = async (req, res) => {
       return res.status(400).json({ message: "El nombre es obligatorio" });
     }
 
+    // 1. Generar credenciales
+    const email = await generarEmailUnico(nombre);
+    const passwordPlano = generarPassword();
+    const passwordHash = await bcrypt.hash(passwordPlano, 10);
+
+    // 2. Guardar en tabla restaurante
     const [result] = await db.query(
-      "INSERT INTO restaurante (nombre, logo) VALUES (?, ?)",
-      [nombre, logo || null]
+      "INSERT INTO restaurante (nombre, logo, email, password_hash) VALUES (?, ?, ?, ?)",
+      [nombre, logo || null, email, passwordHash]
     );
 
+    // 3. Crear usuario en tabla usuario con rol "restaurante"
+    await db.query(
+      "INSERT INTO usuario (Nombre, EMail, Password, Rol) VALUES (?, ?, ?, ?)",
+      [nombre, email, passwordHash, "restaurante"]
+    );
+
+    // 4. Responder con credenciales UNA SOLA VEZ
     res.status(201).json({
       message: "Restaurante creado correctamente",
-      idRestaurante: result.insertId
+      idRestaurante: result.insertId,
+      credenciales: {
+        email: email,
+        password: passwordPlano
+      }
     });
 
   } catch (error) {
@@ -32,7 +91,8 @@ exports.obtenerRestaurantes = async (req, res) => {
       SELECT 
         RestauranteID as id,
         Nombre as nombre,
-        logo
+        logo,
+        email
       FROM restaurante
     `);
     res.json(rows);
@@ -83,7 +143,7 @@ exports.eliminarRestaurante = async (req, res) => {
       return res.status(404).json({ message: "Restaurante no encontrado" });
     }
 
-    res.json({ message: "Restaurante eliminado correctamente" });
+    res.json({ message: "Restaurante y todos sus datos asociados eliminados con éxito" });
 
   } catch (error) {
     console.error("ERROR al eliminar:", error);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import 'restaurantes_screen.dart';
 import 'admin_screen.dart';
+import 'restaurante_home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -49,6 +50,13 @@ class _LoginScreenState extends State<LoginScreen> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const AdminScreen()),
+          );
+        } else if (rol == "restaurante") {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => RestauranteHomeScreen(usuario: usuario),
+            ),
           );
         } else {
           Navigator.pushReplacement(
@@ -111,6 +119,13 @@ class _LoginScreenState extends State<LoginScreen> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (_) => const AdminScreen()),
+            );
+          } else if (rol == "restaurante") {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => RestauranteHomeScreen(usuario: usuario),
+              ),
             );
           } else {
             Navigator.pushReplacement(
