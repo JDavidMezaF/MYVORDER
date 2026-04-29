@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { getMesasByRestaurante, crearMesa, eliminarMesa } = require('../controllers/mesas.controllers');
-
-router.get('/:idRestaurante', getMesasByRestaurante);
-router.post('/', crearMesa);
-router.delete('/:id', eliminarMesa);
-
+const controller = require('../controllers/mesas.controllers');
+ 
+router.get('/:idRestaurante', controller.getMesasByRestaurante);
+router.post('/', controller.crearMesa);
+router.delete('/:id', controller.eliminarMesa);
+ 
 module.exports = router;
+ 
