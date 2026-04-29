@@ -16,6 +16,9 @@ class _AdminRestauranteScreenState extends State<AdminRestauranteScreen> {
   List<dynamic> _menu = [];
   bool _cargandoMenu = true;
 
+  List<dynamic> _mesas = [];
+  bool _cargandoMesas = true;
+
   // Controladores para editar restaurante
   late TextEditingController _nombreController;
   late TextEditingController _logoController;
@@ -26,12 +29,17 @@ class _AdminRestauranteScreenState extends State<AdminRestauranteScreen> {
   final TextEditingController _platilloPrecioController = TextEditingController();
   final TextEditingController _platilloCategoriaController = TextEditingController();
 
+  // Controladores para nueva mesa
+  final TextEditingController _mesaNumeroController = TextEditingController();
+  final TextEditingController _mesaCapacidadController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     _nombreController = TextEditingController(text: widget.restaurante['nombre']);
     _logoController = TextEditingController(text: widget.restaurante['logo'] ?? '');
     _cargarMenu();
+    _cargarMesas();
   }
 
   @override
@@ -42,8 +50,12 @@ class _AdminRestauranteScreenState extends State<AdminRestauranteScreen> {
     _platilloDescController.dispose();
     _platilloPrecioController.dispose();
     _platilloCategoriaController.dispose();
+    _mesaNumeroController.dispose();
+    _mesaCapacidadController.dispose();
     super.dispose();
   }
+
+  // ── MENÚ ──
 
   Future<void> _cargarMenu() async {
     setState(() => _cargandoMenu = true);
@@ -88,7 +100,7 @@ class _AdminRestauranteScreenState extends State<AdminRestauranteScreen> {
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.pop(context, true); // Regresa y refresca admin_screen
+        Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Error al actualizar restaurante")),
@@ -202,6 +214,140 @@ class _AdminRestauranteScreenState extends State<AdminRestauranteScreen> {
     }
   }
 
+  // ── MESAS ──
+
+  Future<void> _cargarMesas() async {
+    setState(() => _cargandoMesas = true);
+    try {
+      final id = widget.restaurante['id'];
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/api/mesas/$id'),
+      );
+      if (response.statusCode == 200) {
+        setState(() => _mesas = jsonDecode(response.body));
+      }
+    } catch (e) {
+      print("Error al cargar mesas: $e");
+    } finally {
+      setState(() => _cargandoMesas = false);
+    }
+  }
+
+  Future<void> _agregarMesa() async {
+    final numeroText = _mesaNumeroController.text.trim();
+    final capacidadText = _mesaCapacidadController.text.trim();
+
+    if (numeroText.isEmpty || capacidadText.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Número de mesa y capacidad son obligatorios")),
+      );
+      return;
+    }
+
+    final numero = int.tryParse(numeroText);
+    final capacidad = int.tryParse(capacidadText);
+
+    if (numero == null || capacidad == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Ingresa solo números enteros")),
+      );
+      return;
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConfig.baseUrl}/api/mesas'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'RestauranteID': widget.restaurante['id'],
+          'NumeroMesa': numero,
+          'Capacidad': capacidad,
+          'Estado': 'disponible',
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        _mesaNumeroController.clear();
+        _mesaCapacidadController.clear();
+        _cargarMesas();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Mesa agregada correctamente"),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Error al agregar mesa")),
+        );
+      }
+    } catch (e) {
+      print("Error al agregar mesa: $e");
+    }
+  }
+
+  Future<void> _confirmarEliminarMesa(int mesaID, int numeroMesa) async {
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.deepOrange),
+            SizedBox(width: 10),
+            Text("Confirmar eliminación"),
+          ],
+        ),
+        content: Text(
+          '¿Estás seguro de eliminar la Mesa $numeroMesa?',
+          style: const TextStyle(fontSize: 15),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("No",
+                style: TextStyle(color: Colors.black54, fontSize: 15)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.deepOrange,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text("Sí, eliminar", style: TextStyle(fontSize: 15)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmado == true) {
+      try {
+        final response = await http.delete(
+          Uri.parse('${ApiConfig.baseUrl}/api/mesas/$mesaID'),
+        );
+        if (response.statusCode == 200) {
+          _cargarMesas();
+        }
+      } catch (e) {
+        print("Error al eliminar mesa: $e");
+      }
+    }
+  }
+
+  // ── COLOR POR ESTADO ──
+  Color _colorEstado(String estado) {
+    switch (estado.toLowerCase()) {
+      case 'ocupada':
+        return Colors.redAccent;
+      case 'reservada':
+        return Colors.orange;
+      default:
+        return Colors.green;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -217,9 +363,8 @@ class _AdminRestauranteScreenState extends State<AdminRestauranteScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             // ── SECCIÓN EDITAR RESTAURANTE ──
-            _seccionTitulo(Icons.edit, "Editar Restaurante"),
+            _seccionTitulo(Icons.store, "Datos del restaurante"),
             const SizedBox(height: 12),
             _card(
               child: Column(
@@ -227,12 +372,12 @@ class _AdminRestauranteScreenState extends State<AdminRestauranteScreen> {
                   _campo(
                     controller: _nombreController,
                     label: "Nombre del restaurante",
-                    icono: Icons.restaurant,
+                    icono: Icons.storefront,
                   ),
                   const SizedBox(height: 14),
                   _campo(
                     controller: _logoController,
-                    label: "URL del logo",
+                    label: "URL del logo (opcional)",
                     icono: Icons.image,
                   ),
                   const SizedBox(height: 20),
@@ -258,8 +403,145 @@ class _AdminRestauranteScreenState extends State<AdminRestauranteScreen> {
 
             const SizedBox(height: 28),
 
+            // ── SECCIÓN AGREGAR MESA ──
+            _seccionTitulo(Icons.table_restaurant, "Agregar mesa"),
+            const SizedBox(height: 12),
+            _card(
+              child: Column(
+                children: [
+                  _campo(
+                    controller: _mesaNumeroController,
+                    label: "Número de mesa",
+                    icono: Icons.tag,
+                    teclado: TextInputType.number,
+                  ),
+                  const SizedBox(height: 14),
+                  _campo(
+                    controller: _mesaCapacidadController,
+                    label: "Capacidad (personas)",
+                    icono: Icons.people,
+                    teclado: TextInputType.number,
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.add),
+                      label: const Text("Agregar mesa",
+                          style: TextStyle(fontSize: 15)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepOrange,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: _agregarMesa,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 28),
+
+            // ── SECCIÓN LISTA DE MESAS ──
+            _seccionTitulo(Icons.chair, "Mesas actuales"),
+            const SizedBox(height: 12),
+
+            _cargandoMesas
+                ? const Center(
+                    child: CircularProgressIndicator(color: Colors.deepOrange),
+                  )
+                : _mesas.isEmpty
+                    ? _card(
+                        child: const Center(
+                          child: Text(
+                            "No hay mesas aún.\n¡Agrega la primera!",
+                            textAlign: TextAlign.center,
+                            style:
+                                TextStyle(color: Colors.black45, fontSize: 14),
+                          ),
+                        ),
+                      )
+                    : ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _mesas.length,
+                        itemBuilder: (context, index) {
+                          final mesa = _mesas[index];
+                          final int mesaID = mesa['MesaID'];
+                          final int numeroMesa = mesa['NumeroMesa'];
+                          final int capacidad = mesa['Capacidad'];
+                          final String estado = mesa['Estado'] ?? 'disponible';
+
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14)),
+                            elevation: 2,
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              leading: Container(
+                                width: 46,
+                                height: 46,
+                                decoration: BoxDecoration(
+                                  color: Colors.deepOrange.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(Icons.table_restaurant,
+                                    color: Colors.deepOrange),
+                              ),
+                              title: Text(
+                                "Mesa $numeroMesa",
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 15),
+                              ),
+                              subtitle: Row(
+                                children: [
+                                  const Icon(Icons.people,
+                                      size: 14, color: Colors.black45),
+                                  const SizedBox(width: 4),
+                                  Text("$capacidad personas  •  ",
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.black54)),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: _colorEstado(estado)
+                                          .withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      estado,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: _colorEstado(estado),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete_outline,
+                                    color: Colors.redAccent, size: 24),
+                                tooltip: "Eliminar mesa",
+                                onPressed: () =>
+                                    _confirmarEliminarMesa(mesaID, numeroMesa),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+
+            const SizedBox(height: 28),
+
             // ── SECCIÓN AGREGAR PLATILLO ──
-            _seccionTitulo(Icons.add_circle_outline, "Agregar Platillo"),
+            _seccionTitulo(Icons.restaurant_menu, "Agregar platillo"),
             const SizedBox(height: 12),
             _card(
               child: Column(
@@ -325,7 +607,8 @@ class _AdminRestauranteScreenState extends State<AdminRestauranteScreen> {
                           child: Text(
                             "No hay platillos aún.\n¡Agrega el primero!",
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.black45, fontSize: 14),
+                            style: TextStyle(
+                                color: Colors.black45, fontSize: 14),
                           ),
                         ),
                       )
@@ -336,11 +619,15 @@ class _AdminRestauranteScreenState extends State<AdminRestauranteScreen> {
                         itemBuilder: (context, index) {
                           final platillo = _menu[index];
                           final int idMenu = platillo['idMenu'];
-                          final String nombre = platillo['nombre'] ?? 'Sin nombre';
-                          final String descripcion = platillo['descripcion'] ?? '';
+                          final String nombre =
+                              platillo['nombre'] ?? 'Sin nombre';
+                          final String descripcion =
+                              platillo['descripcion'] ?? '';
                           final double precio =
-                              double.tryParse(platillo['precio'].toString()) ?? 0;
-                          final String categoria = platillo['categoria'] ?? '';
+                              double.tryParse(platillo['precio'].toString()) ??
+                                  0;
+                          final String categoria =
+                              platillo['categoria'] ?? '';
 
                           return Card(
                             margin: const EdgeInsets.only(bottom: 10),
@@ -371,7 +658,8 @@ class _AdminRestauranteScreenState extends State<AdminRestauranteScreen> {
                                   if (descripcion.isNotEmpty)
                                     Text(descripcion,
                                         style: const TextStyle(
-                                            fontSize: 12, color: Colors.black54)),
+                                            fontSize: 12,
+                                            color: Colors.black54)),
                                   const SizedBox(height: 4),
                                   Row(
                                     children: [
@@ -483,7 +771,8 @@ class _AdminRestauranteScreenState extends State<AdminRestauranteScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.deepOrange, width: 1.5),
+          borderSide:
+              const BorderSide(color: Colors.deepOrange, width: 1.5),
         ),
       ),
     );
