@@ -1,14 +1,20 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import '../config/api_config.dart';
 
 class CarritoScreen extends StatefulWidget {
   final String restaurante;
-  final String mesa;
+  final String mesa;        // nombre visible ej. "MESA-01" o "1"
+  final int mesaID;         // ID real de la BD (MesaID)
   final List<Map<String, dynamic>> platillosCarrito;
+  // Cada platillo debe tener: { 'idMenu', 'nombre', 'precio', 'cantidad' }
 
   const CarritoScreen({
     super.key,
     required this.restaurante,
     required this.mesa,
+    required this.mesaID,
     required this.platillosCarrito,
   });
 
@@ -17,6 +23,7 @@ class CarritoScreen extends StatefulWidget {
 }
 
 class _CarritoScreenState extends State<CarritoScreen> {
+  bool _enviando = false;
 
   void _sumarItem(int index) {
     setState(() {
@@ -32,6 +39,66 @@ class _CarritoScreenState extends State<CarritoScreen> {
         widget.platillosCarrito.removeAt(index);
       }
     });
+  }
+
+  Future<void> _confirmarPedido() async {
+    if (widget.platillosCarrito.isEmpty) return;
+    setState(() => _enviando = true);
+
+    try {
+      // Armar lista de platillos con MenuID
+      final List<Map<String, dynamic>> platillos = widget.platillosCarrito
+          .map((item) => {
+                'MenuID': item['idMenu'],
+                'Nombre': item['nombre'],
+                'Cantidad': item['cantidad'],
+                'PrecioUnitario': item['precio'],
+              })
+          .toList();
+
+      final response = await http.post(
+        Uri.parse('${ApiConfig.baseUrl}/api/pedidos'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'MesaID': widget.mesaID,
+          'platillos': platillos,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        widget.platillosCarrito.clear();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('¡Pedido enviado a la cocina! 👨‍🍳'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.popUntil(context, (route) => route.isFirst);
+        }
+      } else {
+        final error = jsonDecode(response.body);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: ${error['message'] ?? 'No se pudo enviar el pedido'}'),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error de conexión: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _enviando = false);
+    }
   }
 
   @override
@@ -136,7 +203,6 @@ class _CarritoScreenState extends State<CarritoScreen> {
                         ),
                         child: Row(
                           children: [
-
                             // ÍCONO
                             Container(
                               width: 46,
@@ -258,11 +324,20 @@ class _CarritoScreenState extends State<CarritoScreen> {
                         width: double.infinity,
                         height: 52,
                         child: ElevatedButton.icon(
-                          icon: const Icon(Icons.check_circle_outline,
-                              color: Colors.white),
-                          label: const Text(
-                            'Confirmar Pedido',
-                            style: TextStyle(
+                          icon: _enviando
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.check_circle_outline,
+                                  color: Colors.white),
+                          label: Text(
+                            _enviando ? 'Enviando...' : 'Confirmar Pedido',
+                            style: const TextStyle(
                               fontSize: 17,
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -274,16 +349,7 @@ class _CarritoScreenState extends State<CarritoScreen> {
                               borderRadius: BorderRadius.circular(14),
                             ),
                           ),
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('¡Pedido enviado a la cocina! 👨‍🍳'),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                            Navigator.popUntil(
-                                context, (route) => route.isFirst);
-                          },
+                          onPressed: _enviando ? null : _confirmarPedido,
                         ),
                       ),
                     ],
@@ -294,7 +360,8 @@ class _CarritoScreenState extends State<CarritoScreen> {
     );
   }
 
-  Widget _botonControl({required IconData icono, required VoidCallback onTap}) {
+  Widget _botonControl(
+      {required IconData icono, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(

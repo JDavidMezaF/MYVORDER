@@ -14,7 +14,7 @@ app.use('/api/restaurantes', require('./routes/restaurantes.routes'));
 app.use('/api/menu', require('./routes/menu.routes'));
 app.use('/api/tickets', require('./routes/tickets.routes'));
 app.use('/api/mesas', require('./routes/mesas.routes'));
-//app.use('/api/pedidos', require('./routes/pedidos.routes'));
+app.use('/api/pedidos', require('./routes/pedidos.routes'));
 
 const PORT = process.env.PORT || 3000;
 

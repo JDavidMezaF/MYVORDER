@@ -6,14 +6,16 @@ import 'carrito_screen.dart';
 
 class MenuScreen extends StatefulWidget {
   final String restaurante;
-  final String mesa;
+  final String mesa;       // texto visible ej. "MESA-01"
   final int idRestaurante;
+  final int mesaID;        // ID real de la BD (MesaID) — NUEVO
 
   const MenuScreen({
     super.key,
     required this.restaurante,
     required this.mesa,
     required this.idRestaurante,
+    required this.mesaID,
   });
 
   @override
@@ -49,11 +51,13 @@ class _MenuScreenState extends State<MenuScreen> {
 
   void _agregarAlCarrito(Map<String, dynamic> platillo) {
     setState(() {
-      int index = _miCarrito.indexWhere((item) => item['nombre'] == platillo['nombre']);
+      int index = _miCarrito
+          .indexWhere((item) => item['idMenu'] == platillo['idMenu']);
       if (index != -1) {
         _miCarrito[index]['cantidad']++;
       } else {
         _miCarrito.add({
+          'idMenu': platillo['idMenu'],   // MenuID de la BD — necesario para detallepedido
           'nombre': platillo['nombre'],
           'precio': double.tryParse(platillo['precio'].toString()) ?? 0.0,
           'cantidad': 1,
@@ -64,7 +68,8 @@ class _MenuScreenState extends State<MenuScreen> {
 
   void _removerDelCarrito(Map<String, dynamic> platillo) {
     setState(() {
-      int index = _miCarrito.indexWhere((item) => item['nombre'] == platillo['nombre']);
+      int index = _miCarrito
+          .indexWhere((item) => item['idMenu'] == platillo['idMenu']);
       if (index != -1) {
         if (_miCarrito[index]['cantidad'] > 1) {
           _miCarrito[index]['cantidad']--;
@@ -75,8 +80,8 @@ class _MenuScreenState extends State<MenuScreen> {
     });
   }
 
-  int _obtenerCantidad(String nombre) {
-    int index = _miCarrito.indexWhere((item) => item['nombre'] == nombre);
+  int _obtenerCantidad(dynamic idMenu) {
+    int index = _miCarrito.indexWhere((item) => item['idMenu'] == idMenu);
     return index != -1 ? _miCarrito[index]['cantidad'] : 0;
   }
 
@@ -95,7 +100,8 @@ class _MenuScreenState extends State<MenuScreen> {
             Text(widget.restaurante),
             Text(
               'Mesa: ${widget.mesa}',
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
+              style:
+                  const TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
             ),
           ],
         ),
@@ -121,7 +127,7 @@ class _MenuScreenState extends State<MenuScreen> {
                     final double precio =
                         double.tryParse(platillo['precio'].toString()) ?? 0.0;
                     final int cantidadActual =
-                        _obtenerCantidad(platillo['nombre']);
+                        _obtenerCantidad(platillo['idMenu']);
 
                     return Card(
                       elevation: 3,
@@ -161,7 +167,9 @@ class _MenuScreenState extends State<MenuScreen> {
                                   ),
                                 ),
                                 if (platillo['descripcion'] != null &&
-                                    platillo['descripcion'].toString().isNotEmpty)
+                                    platillo['descripcion']
+                                        .toString()
+                                        .isNotEmpty)
                                   Padding(
                                     padding: const EdgeInsets.only(top: 3),
                                     child: Text(
@@ -237,6 +245,7 @@ class _MenuScreenState extends State<MenuScreen> {
               builder: (context) => CarritoScreen(
                 restaurante: widget.restaurante,
                 mesa: widget.mesa,
+                mesaID: widget.mesaID,           // ← pasa el ID real
                 platillosCarrito: _miCarrito,
               ),
             ),
@@ -249,7 +258,8 @@ class _MenuScreenState extends State<MenuScreen> {
           isLabelVisible: totalArticulos > 0,
           child: const Icon(Icons.shopping_cart, color: Colors.white),
         ),
-        label: const Text('Ver Pedido', style: TextStyle(color: Colors.white)),
+        label:
+            const Text('Ver Pedido', style: TextStyle(color: Colors.white)),
       ),
     );
   }
