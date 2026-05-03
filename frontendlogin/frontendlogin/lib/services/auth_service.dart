@@ -50,4 +50,23 @@ Future<Map<String, dynamic>> register(
         : {},
   };
 }
+
+Future<Map<String, dynamic>> resetPassword(
+  String email,
+  String nuevaPassword,
+) async {
+  final response = await http.put(
+    Uri.parse("${ApiConfig.baseUrl}/api/usuarios/reset-password"),
+    headers: {"Content-Type": "application/json"},
+    body: jsonEncode({
+      "EMail": email,
+      "NuevaPassword": nuevaPassword,
+    }),
+  );
+
+  return {
+    "statusCode": response.statusCode,
+    "data": jsonDecode(response.body),
+  };
+}
 }

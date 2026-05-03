@@ -48,13 +48,15 @@ class _RestaurantesScreenState extends State<RestaurantesScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Text(
-                        '¿Dónde comerás hoy?',
-                        style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black,
-                          letterSpacing: 0.4,
+                      Expanded(
+                        child: const Text(
+                          '¿Dónde comerás hoy?',
+                          style: TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black,
+                            letterSpacing: 0.4,
+                          ),
                         ),
                       ),
                       IconButton(

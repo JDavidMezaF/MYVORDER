@@ -3,6 +3,7 @@ import '../services/auth_service.dart';
 import 'restaurantes_screen.dart';
 import 'admin_screen.dart';
 import 'restaurante_home_screen.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -280,6 +281,27 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
                           ),
                         ],
+
+                        if (_esLogin)
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: GestureDetector(
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+                              ),
+                              child: const Text(
+                                "¿Olvidaste tu contraseña?",
+                                style: TextStyle(
+                                  color: Colors.deepOrange,
+                                  decoration: TextDecoration.underline,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                        const SizedBox(height: 8),
 
                         const SizedBox(height: 30),
 

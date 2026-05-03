@@ -97,3 +97,31 @@ exports.eliminarUsuario = async (req, res) => {
   }
 };
 
+// RESETEAR CONTRASEÑA
+exports.resetPassword = async (req, res) => {
+  try {
+    const { EMail, NuevaPassword } = req.body;
+
+    const [rows] = await db.query(
+      "SELECT * FROM usuario WHERE EMail = ?",
+      [EMail]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Correo no encontrado" });
+    }
+
+    const hashedPassword = await bcrypt.hash(NuevaPassword, 10);
+
+    await db.query(
+      "UPDATE usuario SET Password = ? WHERE EMail = ?",
+      [hashedPassword, EMail]
+    );
+
+    res.json({ message: "Contraseña actualizada correctamente" });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+};
