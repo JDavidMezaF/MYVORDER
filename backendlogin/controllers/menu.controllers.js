@@ -13,7 +13,7 @@ exports.obtenerMenu = async (req, res) => {
         Descripcion as descripcion,
         Precio as precio,
         Categoria as categoria,
-        Disponibilidad as disponibilidad
+        Disponibilidad as disponibilidad,
         ImagenURL as imagenURL
       FROM menu
       WHERE RestauranteID = ?`,
