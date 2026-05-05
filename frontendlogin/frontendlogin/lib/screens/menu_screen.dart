@@ -6,9 +6,9 @@ import 'carrito_screen.dart';
 
 class MenuScreen extends StatefulWidget {
   final String restaurante;
-  final String mesa;       // texto visible ej. "MESA-01"
+  final String mesa;
   final int idRestaurante;
-  final int mesaID;        // ID real de la BD (MesaID) — NUEVO
+  final int mesaID;
 
   const MenuScreen({
     super.key,
@@ -57,7 +57,7 @@ class _MenuScreenState extends State<MenuScreen> {
         _miCarrito[index]['cantidad']++;
       } else {
         _miCarrito.add({
-          'idMenu': platillo['idMenu'],   // MenuID de la BD — necesario para detallepedido
+          'idMenu': platillo['idMenu'],
           'nombre': platillo['nombre'],
           'precio': double.tryParse(platillo['precio'].toString()) ?? 0.0,
           'cantidad': 1,
@@ -85,6 +85,51 @@ class _MenuScreenState extends State<MenuScreen> {
     return index != -1 ? _miCarrito[index]['cantidad'] : 0;
   }
 
+  // Muestra imagen de URL o placeholder si no hay
+  Widget _imagenPlatillo(String? imagenURL) {
+    final bool tieneImagen = imagenURL != null && imagenURL.isNotEmpty;
+
+    return ClipRRect(
+      borderRadius: const BorderRadius.only(
+        topLeft: Radius.circular(10),
+        bottomLeft: Radius.circular(10),
+      ),
+      child: SizedBox(
+        width: 100,
+        height: 100,
+        child: tieneImagen
+            ? Image.network(
+                imagenURL!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _placeholder(),
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return _placeholder(cargando: true);
+                },
+              )
+            : _placeholder(),
+      ),
+    );
+  }
+
+  Widget _placeholder({bool cargando = false}) {
+    return Container(
+      color: Colors.deepOrange.withOpacity(0.08),
+      child: cargando
+          ? const Center(
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.deepOrange,
+                ),
+              ),
+            )
+          : const Icon(Icons.fastfood, color: Colors.deepOrange, size: 40),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     int totalArticulos = 0;
@@ -100,8 +145,8 @@ class _MenuScreenState extends State<MenuScreen> {
             Text(widget.restaurante),
             Text(
               'Mesa: ${widget.mesa}',
-              style:
-                  const TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
+              style: const TextStyle(
+                  fontSize: 14, fontWeight: FontWeight.normal),
             ),
           ],
         ),
@@ -128,6 +173,7 @@ class _MenuScreenState extends State<MenuScreen> {
                         double.tryParse(platillo['precio'].toString()) ?? 0.0;
                     final int cantidadActual =
                         _obtenerCantidad(platillo['idMenu']);
+                    final String? imagenURL = platillo['imagenURL'];
 
                     return Card(
                       elevation: 3,
@@ -135,22 +181,7 @@ class _MenuScreenState extends State<MenuScreen> {
                       child: Row(
                         children: [
                           // IMAGEN O PLACEHOLDER
-                          ClipRRect(
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(10),
-                              bottomLeft: Radius.circular(10),
-                            ),
-                            child: Container(
-                              width: 100,
-                              height: 100,
-                              color: Colors.deepOrange.withOpacity(0.08),
-                              child: const Icon(
-                                Icons.fastfood,
-                                color: Colors.deepOrange,
-                                size: 40,
-                              ),
-                            ),
-                          ),
+                          _imagenPlatillo(imagenURL),
 
                           const SizedBox(width: 10),
 
@@ -245,7 +276,7 @@ class _MenuScreenState extends State<MenuScreen> {
               builder: (context) => CarritoScreen(
                 restaurante: widget.restaurante,
                 mesa: widget.mesa,
-                mesaID: widget.mesaID,           // ← pasa el ID real
+                mesaID: widget.mesaID,
                 platillosCarrito: _miCarrito,
               ),
             ),
@@ -258,8 +289,8 @@ class _MenuScreenState extends State<MenuScreen> {
           isLabelVisible: totalArticulos > 0,
           child: const Icon(Icons.shopping_cart, color: Colors.white),
         ),
-        label:
-            const Text('Ver Pedido', style: TextStyle(color: Colors.white)),
+        label: const Text('Ver Pedido',
+            style: TextStyle(color: Colors.white)),
       ),
     );
   }

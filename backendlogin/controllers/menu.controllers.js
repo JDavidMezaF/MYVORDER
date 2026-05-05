@@ -14,6 +14,7 @@ exports.obtenerMenu = async (req, res) => {
         Precio as precio,
         Categoria as categoria,
         Disponibilidad as disponibilidad
+        ImagenURL as imagenURL
       FROM menu
       WHERE RestauranteID = ?`,
       [idRestaurante]
@@ -29,22 +30,23 @@ exports.obtenerMenu = async (req, res) => {
 // Crear platillo
 exports.crearPlatillo = async (req, res) => {
   try {
-    const { idRestaurante, nombre, descripcion, precio, categoria, disponibilidad } = req.body;
+    const { idRestaurante, nombre, descripcion, precio, categoria, disponibilidad, imagenURL } = req.body;
 
     if (!idRestaurante || !nombre || !precio) {
       return res.status(400).json({ message: "idRestaurante, nombre y precio son obligatorios" });
     }
 
     const [result] = await db.query(
-      `INSERT INTO menu (RestauranteID, Nombre, Descripcion, Precio, Categoria, Disponibilidad)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO menu (RestauranteID, Nombre, Descripcion, Precio, Categoria, Disponibilidad, ImagenURL)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         idRestaurante,
         nombre,
         descripcion || null,
         precio,
         categoria || null,
-        disponibilidad !== undefined ? disponibilidad : 1
+        disponibilidad !== undefined ? disponibilidad : 1,
+        imagenURL || null
       ]
     );
 
