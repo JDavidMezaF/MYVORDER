@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'escaner_screen.dart';
 import '../services/restaurante_service.dart';
+import '../widgets/soporte_boton.dart';
 import 'login_screen.dart';
 
 class RestaurantesScreen extends StatefulWidget {
@@ -23,6 +24,8 @@ class _RestaurantesScreenState extends State<RestaurantesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // ── BOTÓN SOPORTE FIJO EN LA PARTE INFERIOR ──
+      bottomNavigationBar: const SoporteBoton(),
       body: Stack(
         children: [
 
@@ -48,8 +51,8 @@ class _RestaurantesScreenState extends State<RestaurantesScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Expanded(
-                        child: const Text(
+                      const Expanded(
+                        child: Text(
                           '¿Dónde comerás hoy?',
                           style: TextStyle(
                             fontSize: 30,
@@ -63,14 +66,15 @@ class _RestaurantesScreenState extends State<RestaurantesScreen> {
                         onPressed: () {
                           Navigator.pushAndRemoveUntil(
                             context,
-                            MaterialPageRoute(builder: (_) => const LoginScreen()),
+                            MaterialPageRoute(
+                                builder: (_) => const LoginScreen()),
                             (route) => false,
                           );
                         },
                         icon: const Icon(
                           Icons.logout,
                           color: Colors.red,
-                         size: 28,
+                          size: 28,
                         ),
                         tooltip: "Cerrar sesión",
                       ),
@@ -97,7 +101,8 @@ class _RestaurantesScreenState extends State<RestaurantesScreen> {
                       future: restaurantes,
                       builder: (context, snapshot) {
 
-                        if (snapshot.connectionState == ConnectionState.waiting) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
                           return const Center(
                             child: CircularProgressIndicator(
                               color: Colors.deepOrange,
@@ -152,19 +157,22 @@ class _RestaurantesScreenState extends State<RestaurantesScreen> {
                                   borderRadius: BorderRadius.circular(25),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.08),
+                                      color:
+                                          Colors.black.withOpacity(0.08),
                                       blurRadius: 20,
                                       offset: const Offset(0, 10),
                                     ),
                                   ],
                                 ),
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
                                   children: [
 
                                     // IMAGEN / LOGO
                                     ClipRRect(
-                                      borderRadius: const BorderRadius.vertical(
+                                      borderRadius:
+                                          const BorderRadius.vertical(
                                         top: Radius.circular(25),
                                       ),
                                       child: tieneLogo

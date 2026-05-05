@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../widgets/soporte_boton.dart';
 import 'restaurantes_screen.dart';
 import 'admin_screen.dart';
 import 'restaurante_home_screen.dart';
@@ -21,7 +22,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final AuthService authService = AuthService();
   bool isLoading = false;
   String _rolSeleccionado = "cliente";
-
   bool _hoveringButton = false;
 
   void _toggleForm() {
@@ -40,7 +40,6 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (!mounted) return;
-
       setState(() => isLoading = false);
 
       if (result["statusCode"] == 200) {
@@ -95,7 +94,6 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (!mounted) return;
-
       setState(() => isLoading = false);
 
       if (result["statusCode"] == 200 || result["statusCode"] == 201) {
@@ -113,8 +111,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (loginResult["statusCode"] == 200) {
           final usuario = loginResult["data"]["usuario"];
-          final rol =
-              usuario["Rol"].toString().toLowerCase().trim();
+          final rol = usuario["Rol"].toString().toLowerCase().trim();
 
           if (rol == "admin") {
             Navigator.pushReplacement(
@@ -144,15 +141,11 @@ class _LoginScreenState extends State<LoginScreen> {
       labelText: label,
       floatingLabelStyle: const TextStyle(
         color: Colors.deepOrange,
-        shadows: [
-          Shadow(color: Colors.white, blurRadius: 2),
-        ],
+        shadows: [Shadow(color: Colors.white, blurRadius: 2)],
       ),
       labelStyle: const TextStyle(
         color: Colors.black87,
-        shadows: [
-          Shadow(color: Colors.white, blurRadius: 2),
-        ],
+        shadows: [Shadow(color: Colors.white, blurRadius: 2)],
       ),
       prefixIcon: Icon(icon, color: Colors.deepOrange),
       filled: true,
@@ -163,8 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide:
-            const BorderSide(color: Colors.deepOrange, width: 2),
+        borderSide: const BorderSide(color: Colors.deepOrange, width: 2),
       ),
     );
   }
@@ -172,6 +164,8 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // ── BOTÓN SOPORTE FIJO EN LA PARTE INFERIOR ──
+      bottomNavigationBar: const SoporteBoton(),
       body: Stack(
         children: [
           SizedBox.expand(
@@ -180,13 +174,10 @@ class _LoginScreenState extends State<LoginScreen> {
               fit: BoxFit.cover,
             ),
           ),
-          Container(
-            color: Colors.black.withOpacity(0.25),
-          ),
+          Container(color: Colors.black.withOpacity(0.25)),
           SingleChildScrollView(
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 28),
+              padding: const EdgeInsets.symmetric(horizontal: 28),
               child: Column(
                 children: [
                   const SizedBox(height: 220),
@@ -230,7 +221,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     child: Column(
                       children: [
-
                         if (!_esLogin)
                           TextField(
                             controller: _nombreController,
@@ -238,8 +228,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 'Nombre Completo', Icons.person),
                           ),
 
-                        if (!_esLogin)
-                          const SizedBox(height: 15),
+                        if (!_esLogin) const SizedBox(height: 15),
 
                         TextField(
                           controller: _emailController,
@@ -253,8 +242,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         TextField(
                           controller: _passwordController,
                           obscureText: true,
-                          decoration: _inputDecoration(
-                              'Contraseña', Icons.lock),
+                          decoration:
+                              _inputDecoration('Contraseña', Icons.lock),
                         ),
 
                         if (!_esLogin) ...[
@@ -262,22 +251,16 @@ class _LoginScreenState extends State<LoginScreen> {
                           DropdownButtonFormField<String>(
                             value: _rolSeleccionado,
                             decoration: _inputDecoration(
-                                'Selecciona Rol',
-                                Icons.admin_panel_settings),
+                                'Selecciona Rol', Icons.admin_panel_settings),
                             items: const [
                               DropdownMenuItem(
-                                value: "cliente",
-                                child: Text("Cliente"),
-                              ),
+                                  value: "cliente", child: Text("Cliente")),
                               DropdownMenuItem(
-                                value: "restaurante",
-                                child: Text("Restaurante"),
-                              ),
+                                  value: "restaurante",
+                                  child: Text("Restaurante")),
                             ],
                             onChanged: (value) {
-                              setState(() {
-                                _rolSeleccionado = value!;
-                              });
+                              setState(() => _rolSeleccionado = value!);
                             },
                           ),
                         ],
@@ -288,7 +271,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: GestureDetector(
                               onTap: () => Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        const ForgotPasswordScreen()),
                               ),
                               child: const Text(
                                 "¿Olvidaste tu contraseña?",
@@ -301,8 +286,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
 
-                        const SizedBox(height: 8),
-
                         const SizedBox(height: 30),
 
                         MouseRegion(
@@ -311,8 +294,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           onExit: (_) =>
                               setState(() => _hoveringButton = false),
                           child: AnimatedContainer(
-                            duration:
-                                const Duration(milliseconds: 200),
+                            duration: const Duration(milliseconds: 200),
                             width: double.infinity,
                             child: ElevatedButton(
                               onPressed:
@@ -322,11 +304,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ? Colors.orangeAccent
                                     : Colors.deepOrange,
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 15),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 15),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(14),
+                                  borderRadius: BorderRadius.circular(14),
                                 ),
                               ),
                               child: isLoading
@@ -336,8 +317,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       _esLogin
                                           ? 'Iniciar Sesión'
                                           : 'Registrarse',
-                                      style: const TextStyle(
-                                          fontSize: 18),
+                                      style: const TextStyle(fontSize: 18),
                                     ),
                             ),
                           ),
@@ -349,21 +329,20 @@ class _LoginScreenState extends State<LoginScreen> {
                           onTap: _toggleForm,
                           child: RichText(
                             text: TextSpan(
-                              style: const TextStyle(
-                                fontSize: 14,
-                              ),
+                              style: const TextStyle(fontSize: 14),
                               children: [
-                                const TextSpan(
-                                  text: "¿No tienes cuenta? ",
+                                TextSpan(
+                                  text: _esLogin
+                                      ? "¿No tienes cuenta? "
+                                      : "¿Ya tienes cuenta? ",
                                   style:
-                                      TextStyle(color: Colors.white),
+                                      const TextStyle(color: Colors.white),
                                 ),
-                                const TextSpan(
-                                  text: "Regístrate",
-                                  style: TextStyle(
+                                TextSpan(
+                                  text: _esLogin ? "Regístrate" : "Inicia sesión",
+                                  style: const TextStyle(
                                     color: Colors.deepOrange,
-                                    decoration:
-                                        TextDecoration.underline,
+                                    decoration: TextDecoration.underline,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),

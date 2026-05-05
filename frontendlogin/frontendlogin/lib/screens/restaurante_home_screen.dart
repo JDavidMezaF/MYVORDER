@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
+import '../widgets/soporte_boton.dart';
 import 'login_screen.dart';
 
 class RestauranteHomeScreen extends StatefulWidget {
@@ -94,6 +95,8 @@ class _RestauranteHomeScreenState extends State<RestauranteHomeScreen> {
     final nombre = widget.usuario["Nombre"] ?? "Restaurante";
 
     return Scaffold(
+      // ── BOTÓN SOPORTE FIJO EN LA PARTE INFERIOR ──
+      bottomNavigationBar: const SoporteBoton(),
       body: Stack(
         children: [
 
@@ -300,15 +303,13 @@ class _RestauranteHomeScreenState extends State<RestauranteHomeScreen> {
                               ),
                             )
                           : ListView.builder(
-                              padding: const EdgeInsets.fromLTRB(
-                                  16, 0, 16, 30),
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 30),
                               itemCount: _tickets.length,
                               itemBuilder: (context, index) {
                                 final ticket = _tickets[index];
                                 final int ticketID = ticket['TicketID'];
                                 final String estado =
-                                    ticket['Estado']?.toString() ??
-                                        'pendiente';
+                                    ticket['Estado']?.toString() ?? 'pendiente';
                                 final double total = double.tryParse(
                                         ticket['Total'].toString()) ??
                                     0.0;
@@ -316,8 +317,7 @@ class _RestauranteHomeScreenState extends State<RestauranteHomeScreen> {
                                     ticket['NumeroMesa']?.toString() ?? '-';
                                 final String fecha =
                                     ticket['FechaHora']?.toString() ?? '';
-                                final List detalles =
-                                    ticket['detalles'] ?? [];
+                                final List detalles = ticket['detalles'] ?? [];
                                 final bool expandido =
                                     _expandidos.contains(ticketID);
 
@@ -328,8 +328,7 @@ class _RestauranteHomeScreenState extends State<RestauranteHomeScreen> {
                                     borderRadius: BorderRadius.circular(18),
                                     boxShadow: [
                                       BoxShadow(
-                                        color:
-                                            Colors.black.withOpacity(0.07),
+                                        color: Colors.black.withOpacity(0.07),
                                         blurRadius: 15,
                                         offset: const Offset(0, 6),
                                       ),
@@ -364,13 +363,11 @@ class _RestauranteHomeScreenState extends State<RestauranteHomeScreen> {
                                                   color: _colorEstado(estado)
                                                       .withOpacity(0.12),
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          12),
+                                                      BorderRadius.circular(12),
                                                 ),
                                                 child: Icon(
                                                   _iconoEstado(estado),
-                                                  color:
-                                                      _colorEstado(estado),
+                                                  color: _colorEstado(estado),
                                                   size: 24,
                                                 ),
                                               ),
@@ -381,8 +378,7 @@ class _RestauranteHomeScreenState extends State<RestauranteHomeScreen> {
                                               Expanded(
                                                 child: Column(
                                                   crossAxisAlignment:
-                                                      CrossAxisAlignment
-                                                          .start,
+                                                      CrossAxisAlignment.start,
                                                   children: [
                                                     Row(
                                                       children: [
@@ -390,13 +386,11 @@ class _RestauranteHomeScreenState extends State<RestauranteHomeScreen> {
                                                           "Ticket #$ticketID",
                                                           style: const TextStyle(
                                                             fontWeight:
-                                                                FontWeight
-                                                                    .bold,
+                                                                FontWeight.bold,
                                                             fontSize: 15,
                                                           ),
                                                         ),
-                                                        const SizedBox(
-                                                            width: 8),
+                                                        const SizedBox(width: 8),
                                                         Container(
                                                           padding: const EdgeInsets
                                                               .symmetric(
@@ -410,20 +404,16 @@ class _RestauranteHomeScreenState extends State<RestauranteHomeScreen> {
                                                                     0.15),
                                                             borderRadius:
                                                                 BorderRadius
-                                                                    .circular(
-                                                                        8),
+                                                                    .circular(8),
                                                           ),
                                                           child: Text(
-                                                            estado
-                                                                .toUpperCase(),
+                                                            estado.toUpperCase(),
                                                             style: TextStyle(
                                                               fontSize: 10,
                                                               fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color:
-                                                                  _colorEstado(
-                                                                      estado),
+                                                                  FontWeight.bold,
+                                                              color: _colorEstado(
+                                                                  estado),
                                                             ),
                                                           ),
                                                         ),
@@ -450,16 +440,13 @@ class _RestauranteHomeScreenState extends State<RestauranteHomeScreen> {
                                                     "\$${total.toStringAsFixed(2)}",
                                                     style: const TextStyle(
                                                       fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color:
-                                                          Colors.deepOrange,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.deepOrange,
                                                     ),
                                                   ),
                                                   Icon(
                                                     expandido
-                                                        ? Icons
-                                                            .keyboard_arrow_up
+                                                        ? Icons.keyboard_arrow_up
                                                         : Icons
                                                             .keyboard_arrow_down,
                                                     color: Colors.black38,
@@ -521,13 +508,14 @@ class _RestauranteHomeScreenState extends State<RestauranteHomeScreen> {
                                                             size: 14,
                                                             color: Colors
                                                                 .deepOrange),
-                                                        const SizedBox(
-                                                            width: 6),
+                                                        const SizedBox(width: 6),
                                                         Expanded(
                                                           child: Text(
                                                             "$cantidad× $platillo",
-                                                            style: const TextStyle(
-                                                                fontSize: 13),
+                                                            style:
+                                                                const TextStyle(
+                                                                    fontSize:
+                                                                        13),
                                                           ),
                                                         ),
                                                         Text(
@@ -535,10 +523,9 @@ class _RestauranteHomeScreenState extends State<RestauranteHomeScreen> {
                                                           style: const TextStyle(
                                                             fontSize: 13,
                                                             fontWeight:
-                                                                FontWeight
-                                                                    .bold,
-                                                            color: Colors
-                                                                .black54,
+                                                                FontWeight.bold,
+                                                            color:
+                                                                Colors.black54,
                                                           ),
                                                         ),
                                                       ],
@@ -570,14 +557,14 @@ class _RestauranteHomeScreenState extends State<RestauranteHomeScreen> {
                                                             BorderRadius
                                                                 .circular(10),
                                                       ),
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          vertical: 10),
+                                                      padding:
+                                                          const EdgeInsets
+                                                              .symmetric(
+                                                              vertical: 10),
                                                     ),
                                                     onPressed: () =>
                                                         _actualizarEstado(
-                                                            ticketID,
-                                                            'Pagado'),
+                                                            ticketID, 'Pagado'),
                                                   ),
                                                 ),
                                               ],
