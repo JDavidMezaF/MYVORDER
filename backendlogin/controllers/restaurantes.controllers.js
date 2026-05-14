@@ -11,13 +11,13 @@ const generarEmailBase = (nombre) => {
     .toLowerCase()
     .replace(/\s+/g, '')        // quita espacios
     .replace(/[^a-z0-9]/g, '') // quita caracteres especiales
-    + '@test.com';
+    + '@gmail.com';
 };
 
 // Manejo de duplicados: tacospepe@test.com → tacospepe2@test.com → tacospepe3@test.com
 const generarEmailUnico = async (nombre) => {
   const emailBase = generarEmailBase(nombre);
-  const usuario = emailBase.replace('@test.com', '');
+  const usuario = emailBase.replace('@gmail.com', '');
 
   let email = emailBase;
   let contador = 2;
@@ -28,7 +28,7 @@ const generarEmailUnico = async (nombre) => {
       [email]
     );
     if (rows.length === 0) break; // email disponible ✅
-    email = `${usuario}${contador}@test.com`;
+    email = `${usuario}${contador}@gmail.com`;
     contador++;
   }
 
