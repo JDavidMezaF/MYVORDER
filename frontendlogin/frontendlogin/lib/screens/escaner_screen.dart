@@ -9,12 +9,14 @@ class EscanerScreen extends StatefulWidget {
   final String nombreUsuario;
   final String nombreRestaurante;
   final int idRestaurante;
+  final Map<String, dynamic> usuario;
 
   const EscanerScreen({
     super.key,
     required this.nombreUsuario,
     required this.nombreRestaurante,
     required this.idRestaurante,
+    required this.usuario,
   });
 
   @override
@@ -78,6 +80,7 @@ class _EscanerScreenState extends State<EscanerScreen> {
 
         if (mesaEncontrada != null) {
           final int mesaID = mesaEncontrada['MesaID'];
+          final int capacidad = mesaEncontrada['Capacidad'] ?? 1;
           final String nombreMesa =
               'Mesa ${mesaEncontrada['NumeroMesa']}';
 
@@ -90,6 +93,8 @@ class _EscanerScreenState extends State<EscanerScreen> {
                   mesa: nombreMesa,
                   idRestaurante: widget.idRestaurante,
                   mesaID: mesaID,
+                  capacidad: capacidad,
+                  usuario: widget.usuario,
                 ),
               ),
             );

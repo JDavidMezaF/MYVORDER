@@ -9,6 +9,8 @@ class MenuScreen extends StatefulWidget {
   final String mesa;
   final int idRestaurante;
   final int mesaID;
+  final int capacidad;
+  final Map<String, dynamic> usuario;
 
   const MenuScreen({
     super.key,
@@ -16,6 +18,8 @@ class MenuScreen extends StatefulWidget {
     required this.mesa,
     required this.idRestaurante,
     required this.mesaID,
+    required this.capacidad,
+    required this.usuario,
   });
 
   @override
@@ -278,6 +282,8 @@ class _MenuScreenState extends State<MenuScreen> {
                 mesa: widget.mesa,
                 mesaID: widget.mesaID,
                 platillosCarrito: _miCarrito,
+                capacidad: widget.capacidad,
+                usuario: widget.usuario,
               ),
             ),
           );

@@ -4,6 +4,7 @@ const controllers = require('../controllers/usuarios.controllers');
 
 router.get('/', controllers.obtenerUsuarios);
 router.post('/', controllers.crearUsuario);
+router.get('/buscar', controllers.buscarPorEmail);
 
 //PARTE AÑADIDA PARA LOGIN
 router.post('/login', controllers.login);

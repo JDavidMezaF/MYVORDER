@@ -61,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
         } else {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const RestaurantesScreen()),
+                        MaterialPageRoute(builder: (_) => RestaurantesScreen(usuario: usuario)),
           );
         }
       } else {
@@ -111,7 +111,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (loginResult["statusCode"] == 200) {
           final usuario = loginResult["data"]["usuario"];
-          final rol = usuario["Rol"].toString().toLowerCase().trim();
+          final rol = usuario["rol"].toString().toLowerCase().trim();
 
           if (rol == "admin") {
             Navigator.pushReplacement(
@@ -128,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
           } else {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (_) => const RestaurantesScreen()),
+              MaterialPageRoute(builder: (_) => RestaurantesScreen(usuario: usuario)),
             );
           }
         }

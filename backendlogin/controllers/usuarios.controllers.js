@@ -125,3 +125,29 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+
+// BUSCAR USUARIO POR CORREO (para agregarlo a una mesa)
+exports.buscarPorEmail = async (req, res) => {
+  try {
+    const email = (req.query.email || '').trim();
+
+    if (!email) {
+      return res.status(400).json({ message: "El correo es obligatorio" });
+    }
+
+    const [rows] = await db.query(
+      "SELECT UsuarioID, Nombre, EMail FROM usuario WHERE EMail = ? AND rol = 'cliente'",
+      [email]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "No hay ningún usuario con ese correo" });
+    }
+
+    res.json(rows[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+};

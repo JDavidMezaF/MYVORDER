@@ -5,7 +5,9 @@ import '../widgets/soporte_boton.dart';
 import 'login_screen.dart';
 
 class RestaurantesScreen extends StatefulWidget {
-  const RestaurantesScreen({super.key});
+  final Map<String, dynamic> usuario;
+
+  const RestaurantesScreen({super.key, required this.usuario});
 
   @override
   State<RestaurantesScreen> createState() => _RestaurantesScreenState();
@@ -143,7 +145,8 @@ class _RestaurantesScreenState extends State<RestaurantesScreen> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => EscanerScreen(
-                                      nombreUsuario: "Invitado",
+                                      nombreUsuario: (widget.usuario['Nombre'] ?? 'Invitado').toString(),
+                                      usuario: widget.usuario,
                                       nombreRestaurante: rest['nombre'],
                                       idRestaurante: rest['id'],
                                     ),
