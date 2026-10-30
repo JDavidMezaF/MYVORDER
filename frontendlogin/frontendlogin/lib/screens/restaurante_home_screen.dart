@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 import '../widgets/soporte_boton.dart';
 import 'login_screen.dart';
+import 'reporte_ventas_screen.dart';
 
 class RestauranteHomeScreen extends StatefulWidget {
   final Map<String, dynamic> usuario;
@@ -169,6 +170,42 @@ class _RestauranteHomeScreenState extends State<RestauranteHomeScreen> {
 
                       Row(
                         children: [
+                           // Botón reporte de ventas
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ReporteVentasScreen(
+                                    email: (widget.usuario['EMail'] ?? '').toString(),
+                                    nombreRestaurante: nombre.toString(),
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  )
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.bar_chart,
+                                color: Colors.deepOrange,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(width: 10),
+
                           // Botón refrescar
                           GestureDetector(
                             onTap: _cargarTickets,

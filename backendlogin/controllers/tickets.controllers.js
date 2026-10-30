@@ -72,8 +72,12 @@ exports.actualizarEstadoTicket = async (req, res) => {
       return res.status(400).json({ message: "El estado es obligatorio" });
     }
 
+    // Al marcar como Pagado se guarda cuándo se pagó; si vuelve a otro estado, se limpia
+    const esPagado = String(estado).toLowerCase() === 'pagado';
     const [result] = await db.query(
-      "UPDATE ticket SET Estado = ? WHERE TicketID = ?",
+      `UPDATE ticket
+       SET Estado = ?, FechaPago = ${esPagado ? 'COALESCE(FechaPago, NOW())' : 'NULL'}
+       WHERE TicketID = ?`,
       [estado, id]
     );
 
